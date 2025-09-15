@@ -44,7 +44,7 @@
       </div>
 
       <div>
-        <label>Pontos Dmg/Healing Roda</label>
+        <label>Pontos Dmg/Healing Wheel</label>
         <input id="pontosWheel" type="number" value="33">
       </div>
 
@@ -59,7 +59,7 @@
       </div>
 
       <div>
-        <label>Base mas san (roda + gemas) (%)</label>
+        <label>Base mas san (wheel + gemas) (%)</label>
         <input id="baseMasSan" type="number" step="0.1" value="8.5">
       </div>
 
@@ -69,17 +69,18 @@
       </div>
 
       <div>
-        <label>Dano sofrido por Sagrado (%)</label>
+        <label>Holy weakness (%)</label>
         <input id="holyWeak" type="number" step="1" value="100">
       </div>
 
       <div>
-        <label>Dano sofrido por Físico (%)</label>
+        <label>Physical weakness (%)</label>
         <input id="physWeak" type="number" step="1" value="100">
       </div>
 
       <div class="full toolbar">
         <button class="btn" id="shareBtn">Compartilhar</button>
+        <button class="btn gray" id="langBtn">English</button>
         <button class="btn gray" id="clearBtn">Limpar</button>
         <span class="muted" id="statusText"></span>
       </div>
@@ -150,7 +151,6 @@
 
     // === FÓRMULAS ===
     function calcF14(F2){
-      // Usa FLOOR (arredondar para baixo) conforme esperado
       if (F2 < 500)  return Math.floor(F2/5);
       if (F2 < 1100) return Math.floor((F2-500)/6 + 100);
       if (F2 < 1800) return Math.floor((F2-1100)/7 + 200);
@@ -298,23 +298,218 @@
     });
     document.getElementById('shareBtn').addEventListener('click', doShare);
 
+    // === i18n ===
+    const i18n = {
+      pt: {
+        appTitle: "Calculadora Perks Sanguine Bow",
+        title: "Calculadora Perks Sanguine Bow",
+        buttons: { share: "Compartilhar", reset: "Limpar", lang: "English" },
+        groups: { resumo: "Resumo", stage4: "Stage 4", stage5: "Stage 5" },
+        labels: {
+          level: "Level",
+          magicLevel: "Magic Level",
+          distance: "Distance",
+          pontosWheel: "Pontos Dmg/Healing Wheel",
+          chanceCrit: "Chance de crítico (%)",
+          chanceLegs: "Chance ativação legs (%)",
+          baseMasSan: "Base mas san (wheel + gemas) (%)",
+          flechasHora: "Flechas/hora",
+          holyWeak: "Holy weakness (%)",
+          physWeak: "Physical weakness (%)"
+        },
+        summary: {
+          f14: "Level dmg",
+          f15: "Base dmg",
+          f16: "Chance crítico ajustada",
+          f17: "Bônus legs → avatar 3"
+        },
+        stage4: {
+          f20: "+4% base damage para Divine Caldera",
+          f21: "+20% critical extra damage para Divine Caldera"
+        },
+        stage5: {
+          f24: "+3% critical hit chance para Divine Caldera",
+          f25: "+10% Distance Fighting p/ spells",
+          f26: "+2 attack"
+        },
+        shareTitle: "Minha simulação — Calculadora",
+        shareSummary: "Resumo"
+      },
+      en: {
+        appTitle: "Sanguine Bow Proficiency Calculator",
+        title: "Sanguine Bow Proficiency Calculator",
+        buttons: { share: "Share", reset: "Reset", lang: "Português" },
+        groups: { resumo: "Resume", stage4: "Stage 4", stage5: "Stage 5" },
+        labels: {
+          level: "Level",
+          magicLevel: "Magic Level",
+          distance: "Distance",
+          pontosWheel: "Dmg/Healing from Wheel",
+          chanceCrit: "Critical chance  (%)",
+          chanceLegs: "Trancendence Triggering Chance (legs) (%)",
+          baseMasSan: "Base mas san (wheel + gems) (%)",
+          flechasHora: "Arrows/h",
+          holyWeak: "Damage taken from Holy",
+          physWeak: "Damage taken from Physical"
+        },
+        summary: {
+          f14: "Level dmg",
+          f15: "Base dmg",
+          f16: "Ajusted Critical Chance",
+          f17: "Transcendence avatar 3 Bonus"
+        },
+        stage4: {
+          f20: "+4% base damage for Divine Caldera",
+          f21: "+20% critical extra damage for Divine Caldera"
+        },
+        stage5: {
+          f24: "+3% critical hit chance for Divine Caldera",
+          f25: "+10% Distance Fighting as extra damage for spells",
+          f26: "+2 attack"
+        },
+        shareTitle: "My simulation — Calculator",
+        shareSummary: "Resume"
+      }
+    };
+
+    function applyLang(lang){
+      const t = i18n[lang] || i18n.pt;
+      // title e header
+      document.title = t.appTitle + " — versão web";
+      const h2 = document.querySelector(".card h2"); if(h2) h2.textContent = t.title;
+
+      // Botões
+      const shareBtn = document.getElementById("shareBtn"); if(shareBtn) shareBtn.textContent = t.buttons.share;
+      const clearBtn = document.getElementById("clearBtn"); if(clearBtn) clearBtn.textContent = t.buttons.reset;
+      const langBtn = document.getElementById("langBtn"); if(langBtn) langBtn.textContent = t.buttons.lang;
+
+      // Grupos
+      const gResumo = document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent = t.groups.resumo;
+      const g4 = document.querySelector("#groupStage4 h3"); if(g4) g4.firstChild.nodeValue = t.groups.stage4 + " ";
+      const g5 = document.querySelector("#groupStage5 h3"); if(g5) g5.firstChild.nodeValue = t.groups.stage5 + " ";
+
+      // Labels de inputs (usa o <label> anterior a cada input)
+      const labelOf = (id) => document.getElementById(id)?.previousElementSibling;
+      const L = t.labels;
+      const map = {
+        level: L.level,
+        magicLevel: L.magicLevel,
+        distance: L.distance,
+        pontosWheel: L.pontosWheel,
+        chanceCrit: L.chanceCrit,
+        chanceLegs: L.chanceLegs,
+        baseMasSan: L.baseMasSan,
+        flechasHora: L.flechasHora,
+        holyWeak: L.holyWeak,
+        physWeak: L.physWeak,
+      };
+      Object.entries(map).forEach(([id, text]) => {
+        const lab = labelOf(id);
+        if(lab) lab.textContent = text;
+      });
+
+      // Resumo (prefixos antes dos spans)
+      const setPrefix = (outId, txt) => {
+        const span = document.getElementById(outId);
+        if(span && span.parentElement){
+          span.parentElement.innerHTML = txt + ": <span id='" + outId + "'>" + span.textContent + "</span>";
+        }
+      };
+      setPrefix("outF14", t.summary.f14);
+      setPrefix("outF15", t.summary.f15);
+      setPrefix("outF16", t.summary.f16);
+      setPrefix("outF17", t.summary.f17);
+
+      // Stages
+      setPrefix("outF20", t.stage4.f20);
+      setPrefix("outF21", t.stage4.f21);
+      setPrefix("outF24", t.stage5.f24);
+      setPrefix("outF25", t.stage5.f25);
+      setPrefix("outF26", t.stage5.f26);
+
+      // lang attr
+      document.documentElement.lang = (lang === "en" ? "en" : "pt-BR");
+
+      // Guarda estado
+      try{ localStorage.setItem("calc_lang", lang); }catch(e){}
+    }
+    function currentLang(){
+      try{
+        const saved = localStorage.getItem("calc_lang");
+        if(saved) return saved;
+      }catch(e){}
+      return "pt";
+    }
+
+    // Substitui doShare para usar textos da língua atual
+    async function doShare(){
+      const lang = currentLang();
+      const t = i18n[lang] || i18n.pt;
+      const url = buildShareURL();
+      const txt = [
+        t.shareSummary + ":",
+        t.summary.f14 + ": " + document.getElementById("outF14").innerText,
+        t.summary.f15 + ": " + document.getElementById("outF15").innerText,
+        t.summary.f16 + ": " + document.getElementById("outF16").innerText,
+        t.summary.f17 + ": " + document.getElementById("outF17").innerText,
+        t.groups.stage4 + " – " + t.stage4.f20 + ": " + document.getElementById("outF20").innerText,
+        t.groups.stage4 + " – " + t.stage4.f21 + ": " + document.getElementById("outF21").innerText,
+        t.groups.stage5 + " – " + t.stage5.f24 + ": " + document.getElementById("outF24").innerText,
+        t.groups.stage5 + " – " + t.stage5.f25 + ": " + document.getElementById("outF25").innerText,
+        t.groups.stage5 + " – " + t.stage5.f26 + ": " + document.getElementById("outF26").innerText
+      ].join("\\n");
+
+      if (navigator.share){
+        try{
+          await navigator.share({ title: t.shareTitle, text: txt, url });
+          document.getElementById('statusText').innerText = (lang === "en" ? "Shared!" : "Compartilhado!");
+          setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
+          return;
+        }catch(e){ /* fallback */ }
+      }
+      try{
+        await navigator.clipboard.writeText(url);
+        document.getElementById('statusText').innerText = (lang === "en" ? "Link copied ✔" : "Link copiado ✔");
+        setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
+      }catch(e){
+        document.getElementById('statusText').innerText = url;
+      }
+    }
+
+    // Toggle language button + boot
+    document.getElementById("langBtn").addEventListener("click", () => {
+      const lang = currentLang();
+      const next = (lang === "en") ? "pt" : "en";
+      applyLang(next);
+    });
+    (function initLang(){ applyLang(currentLang()); })();
+
     // Boot: restaurar da URL/localStorage e calcular
     (function restoreAndRun(){
-      restoreFromURL();
-      try{
-        const raw = localStorage.getItem('calc_state');
-        if(raw && window.location.search.length === 0){
-          const st = JSON.parse(raw);
-          const set = (id, val) => { if (val !== undefined && val !== null) document.getElementById(id).value = val; };
-          set('level', st.F2); set('magicLevel', st.F3); set('distance', st.F4); set('pontosWheel', st.F5);
-          if(st.F6!=null) document.getElementById('chanceCrit').value = (st.F6*100).toString();
-          if(st.F7!=null) document.getElementById('chanceLegs').value = (st.F7*100).toString();
-          if(st.F8!=null) document.getElementById('baseMasSan').value = (st.F8*100).toString();
-          set('flechasHora', st.F9);
-          if(st.F11!=null) document.getElementById('holyWeak').value = (st.F11*100).toString();
-          if(st.F12!=null) document.getElementById('physWeak').value = (st.F12*100).toString();
-        }
-      }catch(e){}
+      // URL primeiro
+      const params = new URLSearchParams(window.location.search);
+      if(params && Array.from(params.keys()).length){
+        const set = (id, key) => { if(params.has(key)) document.getElementById(id).value = params.get(key); };
+        set('level','level'); set('magicLevel','magicLevel'); set('distance','distance'); set('pontosWheel','pontosWheel');
+        set('chanceCrit','chanceCrit'); set('chanceLegs','chanceLegs'); set('baseMasSan','baseMasSan'); set('flechasHora','flechasHora');
+        set('holyWeak','holyWeak'); set('physWeak','physWeak');
+      }else{
+        // Senão, tenta localStorage legado
+        try{
+          const raw = localStorage.getItem('calc_state');
+          if(raw){
+            const st = JSON.parse(raw);
+            const set = (id, val) => { if (val !== undefined && val !== null) document.getElementById(id).value = val; };
+            set('level', st.F2); set('magicLevel', st.F3); set('distance', st.F4); set('pontosWheel', st.F5);
+            if(st.F6!=null) document.getElementById('chanceCrit').value = (st.F6*100).toString();
+            if(st.F7!=null) document.getElementById('chanceLegs').value = (st.F7*100).toString();
+            if(st.F8!=null) document.getElementById('baseMasSan').value = (st.F8*100).toString();
+            set('flechasHora', st.F9);
+            if(st.F11!=null) document.getElementById('holyWeak').value = (st.F11*100).toString();
+            if(st.F12!=null) document.getElementById('physWeak').value = (st.F12*100).toString();
+          }
+        }catch(e){}
+      }
       rodarCalculadora();
     })();
   </script>

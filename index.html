@@ -13,6 +13,8 @@
     .full { grid-column: 1 / -1; }
     .btn { padding:10px 14px; background:#2563eb; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
     .btn.gray { background:#6b7280; }
+    .btn.small { padding:8px 10px; font-size:13px; }
+    .header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .toolbar { display:flex; gap:8px; flex-wrap:wrap; }
     .results-group { margin-top:14px; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:10px; }
     .results-group h3 { margin:0 0 10px; font-size:16px; }
@@ -25,7 +27,7 @@
 </head>
 <body>
   <div class="card">
-    <h2>Calculadora Perks Sanguine Bow</h2>
+    <div class="header"><h2>Calculadora Perks Sanguine Bow</h2><button class="btn gray small" id="langBtn">English</button></div>
 
     <div class="grid">
       <div>
@@ -44,7 +46,7 @@
       </div>
 
       <div>
-        <label>Pontos Dmg/Healing Wheel</label>
+        <label>Pontos Dmg/Healing Roda</label>
         <input id="pontosWheel" type="number" value="33">
       </div>
 
@@ -59,7 +61,7 @@
       </div>
 
       <div>
-        <label>Base mas san (wheel + gemas) (%)</label>
+        <label>Base mas san (roda + gemas) (%)</label>
         <input id="baseMasSan" type="number" step="0.1" value="8.5">
       </div>
 
@@ -69,18 +71,17 @@
       </div>
 
       <div>
-        <label>Holy weakness (%)</label>
+        <label>Dano sofrido por Sagrado (%)</label>
         <input id="holyWeak" type="number" step="1" value="100">
       </div>
 
       <div>
-        <label>Physical weakness (%)</label>
+        <label>Dano sofrido por Físico (%)</label>
         <input id="physWeak" type="number" step="1" value="100">
       </div>
 
       <div class="full toolbar">
         <button class="btn" id="shareBtn">Compartilhar</button>
-        <button class="btn gray" id="langBtn">English</button>
         <button class="btn gray" id="clearBtn">Limpar</button>
         <span class="muted" id="statusText"></span>
       </div>

@@ -111,10 +111,6 @@
         <div class="result full" id="cardF26"><div>+2 attack: <span id="outF26">--</span></div></div>
       </div>
     </div>
-
-    <p class="muted" style="margin-top:10px">
-      Percentuais: F6/F7/F8 são lidos como <em>% ⇒ fração</em>; F11/F12 como <em>% ⇒ multiplicador</em> (100 ⇒ 1, 120 ⇒ 1.2).
-    </p>
   </div>
 
   <script>
@@ -125,12 +121,14 @@
       const n = Number(s);
       return Number.isFinite(n) ? n : 0;
     }
+    // % → fração (12 => 0.12)
     function getPctFraction(id){
       let s = String(document.getElementById(id).value).trim().replace(',', '.');
       if (s.endsWith('%')) s = s.slice(0,-1);
       const n = Number(s);
       return Number.isFinite(n) ? n/100 : 0;
     }
+    // % → multiplicador (100 => 1, 120 => 1.2)
     function getPctMultiplier(id){
       let s = String(document.getElementById(id).value).trim().replace(',', '.');
       if (s.endsWith('%')) s = s.slice(0,-1);
@@ -266,20 +264,9 @@
     }
     async function doShare(){
       const url = buildShareURL();
-      const txt = [
-        'Level dmg: ' + document.getElementById('outF14').innerText,
-        'Base dmg: ' + document.getElementById('outF15').innerText,
-        'Chance crítico ajustada: ' + document.getElementById('outF16').innerText,
-        'Bônus legs→avatar3: ' + document.getElementById('outF17').innerText,
-        'Stage 4 (+4% base damage p/ Divine Caldera): ' + document.getElementById('outF20').innerText,
-        'Stage 4 (+20% critical extra damage p/ Divine Caldera): ' + document.getElementById('outF21').innerText,
-        'Stage 5 (+3% critical hit chance p/ Divine Caldera): ' + document.getElementById('outF24').innerText,
-        'Stage 5 (+10% DF spells): ' + document.getElementById('outF25').innerText,
-        'Stage 5 (+2 attack): ' + document.getElementById('outF26').innerText,
-      ].join('\n');
       if (navigator.share){
         try{
-          await navigator.share({ title: 'Minha simulação — Calculadora', text: txt, url });
+          await navigator.share({ title: 'Minha simulação — Calculadora', url });
           document.getElementById('statusText').innerText = 'Compartilhado!';
           setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
           return;
@@ -312,16 +299,13 @@
 
     // Boot: restaurar da URL/localStorage e calcular
     (function restoreAndRun(){
-      // URL tem prioridade
       restoreFromURL();
-      // Caso não haja parâmetros, tenta localStorage
       try{
         const raw = localStorage.getItem('calc_state');
         if(raw && window.location.search.length === 0){
           const st = JSON.parse(raw);
           const set = (id, val) => { if (val !== undefined && val !== null) document.getElementById(id).value = val; };
           set('level', st.F2); set('magicLevel', st.F3); set('distance', st.F4); set('pontosWheel', st.F5);
-          // Os percentuais foram salvos como fração/multiplicador; convertemos para % para exibir igual ao usuário
           if(st.F6!=null) document.getElementById('chanceCrit').value = (st.F6*100).toString();
           if(st.F7!=null) document.getElementById('chanceLegs').value = (st.F7*100).toString();
           if(st.F8!=null) document.getElementById('baseMasSan').value = (st.F8*100).toString();

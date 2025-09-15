@@ -13,7 +13,6 @@
     .full { grid-column: 1 / -1; }
     .btn { padding:10px 14px; background:#2563eb; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
     .btn.gray { background:#6b7280; }
-    .btn.green { background:#16a34a; }
     .toolbar { display:flex; gap:8px; flex-wrap:wrap; }
     .results-group { margin-top:14px; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:10px; }
     .results-group h3 { margin:0 0 10px; font-size:16px; }
@@ -31,7 +30,7 @@
     <div class="grid">
       <div>
         <label>Level</label>
-        <input id="level" type="number" value="690">
+        <input id="level" type="number" value="1000">
       </div>
 
       <div>
@@ -80,9 +79,7 @@
       </div>
 
       <div class="full toolbar">
-        <button class="btn green" id="calcBtn">Calcular</button>
-        <button class="btn gray" id="copyBtn">Copiar resultados</button>
-        <button class="btn" id="saveBtn">Salvar (CSV)</button>
+        <button class="btn" id="shareBtn">Compartilhar</button>
         <button class="btn gray" id="clearBtn">Limpar</button>
         <span class="muted" id="statusText"></span>
       </div>
@@ -116,31 +113,29 @@
     </div>
 
     <p class="muted" style="margin-top:10px">
-      Excel ⇄ JavaScript: ARREDMULTB(x;1) ≈ arredondar ao inteiro mais próximo (Math.round), ARREDONDAR.PARA.BAIXO(x;0) ≈ Math.floor, ROUND() ≈ Math.round.
+      Percentuais: F6/F7/F8 são lidos como <em>% ⇒ fração</em>; F11/F12 como <em>% ⇒ multiplicador</em> (100 ⇒ 1, 120 ⇒ 1.2).
     </p>
   </div>
 
   <script>
+    // === Utils ===
     function getNum(id){
       const el = document.getElementById(id);
-      const n = Number(String(el.value).replace(',', '.'));
+      const s = String(el.value).replace(',', '.');
+      const n = Number(s);
       return Number.isFinite(n) ? n : 0;
     }
-    // Percentual que vira FRAÇÃO (ex.: 12 => 0.12; 0,98 => 0.0098)
     function getPctFraction(id){
       let s = String(document.getElementById(id).value).trim().replace(',', '.');
-      s = s.endsWith('%') ? s.slice(0,-1) : s;
-      let n = Number(s);
-      if(!Number.isFinite(n)) n = 0;
-      return n / 100; // sempre tratamos como valor em %
+      if (s.endsWith('%')) s = s.slice(0,-1);
+      const n = Number(s);
+      return Number.isFinite(n) ? n/100 : 0;
     }
-    // Percentual que vira MULTIPLICADOR (ex.: 100 => 1; 120 => 1.2)
     function getPctMultiplier(id){
       let s = String(document.getElementById(id).value).trim().replace(',', '.');
-      s = s.endsWith('%') ? s.slice(0,-1) : s;
-      let n = Number(s);
-      if(!Number.isFinite(n)) n = 0;
-      return n / 100;
+      if (s.endsWith('%')) s = s.slice(0,-1);
+      const n = Number(s);
+      return Number.isFinite(n) ? n/100 : 0;
     }
     function setText(id, text){ document.getElementById(id).innerText = text; }
     function mround(value, multiple){
@@ -155,7 +150,7 @@
       document.getElementById('pillStage5').style.display = 'none';
     }
 
-    // FÓRMULAS
+    // === FÓRMULAS ===
     function calcF14(F2){
       if (F2 < 500)  return mround(F2/5, 1);
       if (F2 < 1100) return mround((F2-500)/6 + 100, 1);
@@ -165,13 +160,13 @@
     }
     function calcF15(F3, F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
     function calcF16(F9, F7, F6){
-      const p1 = Math.floor(F9*F7*6);
-      const p2 = Math.floor(((F9*2) - p1) * F6);
-      return (p1 + p2) / (F9*2);
+      const part1 = Math.floor(F9*F7*6);
+      const part2 = Math.floor(((F9*2) - part1) * F6);
+      return (part1 + part2) / (F9*2);
     }
     function calcF17(F9, F7){
-      const p1 = Math.floor(F9*F7*6);
-      return (p1 * 15 / (F9*2)) / 100;
+      const part1 = Math.floor(F9*F7*6);
+      return (part1 * 15 / (F9*2)) / 100;
     }
     function calcF20(F14, F3, F8, F5, F16, F17){
       const baseRight = Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4);
@@ -195,17 +190,18 @@
       return diff * 0.5 * 1.0864 * F12;
     }
 
+    // === Execução ===
     function rodarCalculadora(){
       const F2  = getNum('level');
       const F3  = getNum('magicLevel');
       const F4  = getNum('distance');
       const F5  = getNum('pontosWheel');
-      const F6  = getPctFraction('chanceCrit');
-      const F7  = getPctFraction('chanceLegs');
-      const F8  = getPctFraction('baseMasSan');
+      const F6  = getPctFraction('chanceCrit');      // % → fração
+      const F7  = getPctFraction('chanceLegs');      // % → fração
+      const F8  = getPctFraction('baseMasSan');      // % → fração
       const F9  = getNum('flechasHora');
-      const F11 = getPctMultiplier('holyWeak');
-      const F12 = getPctMultiplier('physWeak');
+      const F11 = getPctMultiplier('holyWeak');      // % → multiplicador
+      const F12 = getPctMultiplier('physWeak');      // % → multiplicador
 
       const F14 = calcF14(F2);
       const F15 = calcF15(F3, F8);
@@ -229,23 +225,82 @@
 
       try{ localStorage.setItem('calc_state', JSON.stringify({F2,F3,F4,F5,F6,F7,F8,F9,F11,F12})); }catch(e){}
 
-      // Destaques
+      // Destaques (winners)
       clearHighlights();
       const winnerStage4 = (F20 >= F21) ? 'cardF20' : 'cardF21';
       document.getElementById(winnerStage4).classList.add('winner');
       document.getElementById('pillStage4').style.display = 'inline-block';
 
       let winner5 = 'cardF24'; let max5 = F24;
-      if(F25 > max5){ winner5='cardF25'; max5=F25; }
-      if(F26 > max5){ winner5='cardF26'; max5=F26; }
+      if(F25 > max5){ winner5='cardF25'; max5 = F25; }
+      if(F26 > max5){ winner5='cardF26'; max5 = F26; }
       document.getElementById(winner5).classList.add('winner');
       document.getElementById('pillStage5').style.display = 'inline-block';
     }
 
-    const ids = ['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
-    ids.forEach(id => { document.getElementById(id).addEventListener('input', rodarCalculadora); });
+    // Deep link share
+    function buildShareURL(){
+      const raw = {
+        level: document.getElementById('level').value,
+        magicLevel: document.getElementById('magicLevel').value,
+        distance: document.getElementById('distance').value,
+        pontosWheel: document.getElementById('pontosWheel').value,
+        chanceCrit: document.getElementById('chanceCrit').value,
+        chanceLegs: document.getElementById('chanceLegs').value,
+        baseMasSan: document.getElementById('baseMasSan').value,
+        flechasHora: document.getElementById('flechasHora').value,
+        holyWeak: document.getElementById('holyWeak').value,
+        physWeak: document.getElementById('physWeak').value,
+      };
+      const params = new URLSearchParams(raw);
+      const base = window.location.origin + window.location.pathname;
+      return base + '?' + params.toString();
+    }
+    function restoreFromURL(){
+      const params = new URLSearchParams(window.location.search);
+      if(!params || Array.from(params.keys()).length === 0) return;
+      const set = (id, key) => { if(params.has(key)) document.getElementById(id).value = params.get(key); };
+      set('level','level'); set('magicLevel','magicLevel'); set('distance','distance'); set('pontosWheel','pontosWheel');
+      set('chanceCrit','chanceCrit'); set('chanceLegs','chanceLegs'); set('baseMasSan','baseMasSan'); set('flechasHora','flechasHora');
+      set('holyWeak','holyWeak'); set('physWeak','physWeak');
+    }
+    async function doShare(){
+      const url = buildShareURL();
+      const txt = [
+        'Level dmg: ' + document.getElementById('outF14').innerText,
+        'Base dmg: ' + document.getElementById('outF15').innerText,
+        'Chance crítico ajustada: ' + document.getElementById('outF16').innerText,
+        'Bônus legs→avatar3: ' + document.getElementById('outF17').innerText,
+        'Stage 4 (+4% base damage p/ Divine Caldera): ' + document.getElementById('outF20').innerText,
+        'Stage 4 (+20% critical extra damage p/ Divine Caldera): ' + document.getElementById('outF21').innerText,
+        'Stage 5 (+3% critical hit chance p/ Divine Caldera): ' + document.getElementById('outF24').innerText,
+        'Stage 5 (+10% DF spells): ' + document.getElementById('outF25').innerText,
+        'Stage 5 (+2 attack): ' + document.getElementById('outF26').innerText,
+      ].join('\n');
+      if (navigator.share){
+        try{
+          await navigator.share({ title: 'Minha simulação — Calculadora', text: txt, url });
+          document.getElementById('statusText').innerText = 'Compartilhado!';
+          setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
+          return;
+        }catch(e){ /* fallback */ }
+      }
+      try{
+        await navigator.clipboard.writeText(url);
+        document.getElementById('statusText').innerText = 'Link copiado ✔';
+        setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
+      }catch(e){
+        document.getElementById('statusText').innerText = url;
+      }
+    }
 
-    document.getElementById('calcBtn').addEventListener('click', rodarCalculadora);
+    // Eventos
+    const ids = ['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', rodarCalculadora);
+      el.addEventListener('change', rodarCalculadora);
+    });
     document.getElementById('clearBtn').addEventListener('click', () => {
       ids.forEach(id => document.getElementById(id).value = '');
       ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id => setText(id, '--'));
@@ -253,60 +308,26 @@
       clearHighlights();
       document.getElementById('statusText').innerText = '';
     });
-    document.getElementById('copyBtn').addEventListener('click', async () => {
-      const txt = [
-        'Level dmg: ' + document.getElementById('outF14').innerText,
-        'Base dmg: ' + document.getElementById('outF15').innerText,
-        'Chance crítico ajustada: ' + document.getElementById('outF16').innerText,
-        'Bônus legs→avatar3: ' + document.getElementById('outF17').innerText,
-        'Stage 4 (+4% base dmg crit): ' + document.getElementById('outF20').innerText,
-        'Stage 4 (+20% crit extra): ' + document.getElementById('outF21').innerText,
-        'Stage 5 (+3% crit chance): ' + document.getElementById('outF24').innerText,
-        'Stage 5 (+10% DF spells): ' + document.getElementById('outF25').innerText,
-        'Stage 5 (+2 attack): ' + document.getElementById('outF26').innerText,
-      ].join('\n');
-      try{ await navigator.clipboard.writeText(txt); document.getElementById('statusText').innerText = 'Resultados copiados ✔'; setTimeout(()=> document.getElementById('statusText').innerText='',1500);}catch(e){}
-    });
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      const s = {
-        F2: getNum('level'), F3: getNum('magicLevel'), F4: getNum('distance'),
-        F5: getNum('pontosWheel'), F6: getNum('chanceCrit'), F7: getNum('chanceLegs'),
-        F8: getNum('baseMasSan'), F9: getNum('flechasHora'), F11: getNum('holyWeak'), F12: getNum('physWeak')
-      };
-      const o = {
-        F14: document.getElementById('outF14').innerText,
-        F15: document.getElementById('outF15').innerText,
-        F16: document.getElementById('outF16').innerText,
-        F17: document.getElementById('outF17').innerText,
-        F20: document.getElementById('outF20').innerText,
-        F21: document.getElementById('outF21').innerText,
-        F24: document.getElementById('outF24').innerText,
-        F25: document.getElementById('outF25').innerText,
-        F26: document.getElementById('outF26').innerText,
-      };
-      const headers = Object.keys(s).concat(Object.keys(o));
-      const values  = Object.values(s).concat(Object.values(o));
-      const csv = headers.join(',') + '\n' + values.join(',');
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const now = new Date().toISOString().replaceAll(':','-').slice(0,19);
-      a.href = url; a.download = 'calculadora-' + now + '.csv';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
-    });
+    document.getElementById('shareBtn').addEventListener('click', doShare);
 
-    // restaurar estado salvo e rodar ao abrir
+    // Boot: restaurar da URL/localStorage e calcular
     (function restoreAndRun(){
+      // URL tem prioridade
+      restoreFromURL();
+      // Caso não haja parâmetros, tenta localStorage
       try{
         const raw = localStorage.getItem('calc_state');
-        if(raw){
+        if(raw && window.location.search.length === 0){
           const st = JSON.parse(raw);
           const set = (id, val) => { if (val !== undefined && val !== null) document.getElementById(id).value = val; };
           set('level', st.F2); set('magicLevel', st.F3); set('distance', st.F4); set('pontosWheel', st.F5);
-          set('chanceCrit', st.F6); set('chanceLegs', st.F7); set('baseMasSan', st.F8); set('flechasHora', st.F9);
-          set('holyWeak', st.F11); set('physWeak', st.F12);
+          // Os percentuais foram salvos como fração/multiplicador; convertemos para % para exibir igual ao usuário
+          if(st.F6!=null) document.getElementById('chanceCrit').value = (st.F6*100).toString();
+          if(st.F7!=null) document.getElementById('chanceLegs').value = (st.F7*100).toString();
+          if(st.F8!=null) document.getElementById('baseMasSan').value = (st.F8*100).toString();
+          set('flechasHora', st.F9);
+          if(st.F11!=null) document.getElementById('holyWeak').value = (st.F11*100).toString();
+          if(st.F12!=null) document.getElementById('physWeak').value = (st.F12*100).toString();
         }
       }catch(e){}
       rodarCalculadora();

@@ -150,11 +150,12 @@
 
     // === FÓRMULAS ===
     function calcF14(F2){
-      if (F2 < 500)  return mround(F2/5, 1);
-      if (F2 < 1100) return mround((F2-500)/6 + 100, 1);
-      if (F2 < 1800) return mround((F2-1100)/7 + 200, 1);
-      if (F2 < 2600) return mround((F2-1800)/8 + 300, 1);
-      return mround((F2-2600)/9 + 400, 1);
+      // Usa FLOOR (arredondar para baixo) conforme esperado
+      if (F2 < 500)  return Math.floor(F2/5);
+      if (F2 < 1100) return Math.floor((F2-500)/6 + 100);
+      if (F2 < 1800) return Math.floor((F2-1100)/7 + 200);
+      if (F2 < 2600) return Math.floor((F2-1800)/8 + 300);
+      return Math.floor((F2-2600)/9 + 400);
     }
     function calcF15(F3, F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
     function calcF16(F9, F7, F6){

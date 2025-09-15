@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Calculadora — versão web</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Inter, Arial, sans-serif; background:#f4f6f9; color:#111; padding:24px; }
+    .card { max-width:960px; margin:18px auto; background:white; padding:18px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    label { display:block; font-size:13px; color:#333; margin-bottom:6px; }
+    input[type=number] { width:100%; padding:8px 10px; border-radius:8px; border:1px solid #ddd; font-size:14px; }
+    .full { grid-column: 1 / -1; }
+    .btn { padding:10px 14px; background:#2563eb; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn.gray { background:#6b7280; }
+    .btn.green { background:#16a34a; }
+    .result { background:#fafafa; padding:12px; border-radius:8px; border:1px solid #eee; font-weight:600; }
+    .note { font-size:13px; color:#666; margin-top:8px; }
+    .toolbar { display:flex; gap:8px; flex-wrap:wrap; }
+    .muted { color:#666; font-weight:500; }
+    @media (max-width: 720px){
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Calculadora (aba do Excel)</h2>
+
+    <div class="grid">
+      <div>
+        <label>Level (F2)</label>
+        <input id="level" type="number" value="690">
+      </div>
+
+      <div>
+        <label>Magic Level (F3)</label>
+        <input id="magicLevel" type="number" value="49">
+      </div>
+
+      <div>
+        <label>Distance (F4)</label>
+        <input id="distance" type="number" value="150">
+      </div>
+
+      <div>
+        <label>Pontos Wheel (F5)</label>
+        <input id="pontosWheel" type="number" value="11">
+      </div>
+
+      <div>
+        <label>Chance de crítico (F6) — use decimal. Ex.: 0.12 = 12%</label>
+        <input id="chanceCrit" type="number" step="0.000001" value="0.12">
+      </div>
+
+      <div>
+        <label>Chance ativação legs (F7) — use decimal. Ex.: 0.0098</label>
+        <input id="chanceLegs" type="number" step="0.000001" value="0.0098">
+      </div>
+
+      <div>
+        <label>Base mas san (wheel + gemas) (F8) — use decimal. Ex.: 0.075</label>
+        <input id="baseMasSan" type="number" step="0.000001" value="0.075">
+      </div>
+
+      <div>
+        <label>Flechas/hora (F9)</label>
+        <input id="flechasHora" type="number" value="1650">
+      </div>
+
+      <div>
+        <label>Holy weakness (F11) — multiplicador</label>
+        <input id="holyWeak" type="number" step="0.01" value="1">
+      </div>
+
+      <div>
+        <label>Physical weakness (F12) — multiplicador</label>
+        <input id="physWeak" type="number" step="0.01" value="1">
+      </div>
+
+      <div class="full toolbar">
+        <button class="btn green" id="calcBtn">Calcular</button>
+        <button class="btn gray" id="copyBtn">Copiar resultados</button>
+        <button class="btn" id="saveBtn">Salvar (CSV)</button>
+        <button class="btn gray" id="clearBtn">Limpar</button>
+        <span class="muted" id="statusText"></span>
+      </div>
+    </div>
+
+    <hr style="margin:16px 0; border:none; border-top:1px solid #eee">
+
+    <div class="grid">
+      <div class="result"><div>Level dmg (F14): <span id="outF14">--</span></div></div>
+      <div class="result"><div>Base dmg (F15): <span id="outF15">--</span></div></div>
+
+      <div class="result"><div>Chance crítico ajustada (F16): <span id="outF16">--</span></div></div>
+      <div class="result"><div>F17 (bonus legs → avatar 3): <span id="outF17">--</span></div></div>
+
+      <div class="result"><div>F20 (Stage 4 — +4% base dmg com crítico): <span id="outF20">--</span></div></div>
+      <div class="result"><div>F21 (Stage 4 — +20% crit extra dmg): <span id="outF21">--</span></div></div>
+
+      <div class="result"><div>F24 (Stage 5 — +3% crit chance, 25% uptime): <span id="outF24">--</span></div></div>
+      <div class="result"><div>F25 (Stage 5 — +10% Distance Fighting p/ spells): <span id="outF25">--</span></div></div>
+
+      <div class="result full"><div>F26 (Stage 5 — +2 attack): <span id="outF26">--</span></div></div>
+    </div>
+
+    <p class="note">
+      Excel ⇄ JavaScript: <code>ARREDMULTB(x;1)</code> ≈ arredondar ao inteiro mais próximo (<code>Math.round</code>),<br>
+      <code>ARREDONDAR.PARA.BAIXO(x;0)</code> ≈ <code>Math.floor</code>, <code>ROUND()</code> ≈ <code>Math.round</code>.
+    </p>
+  </div>
+
+  <script>
+    // === Utils ===
+    function getNum(id){
+      // Como os inputs são type=number, o browser já valida. Ainda assim tratamos vazio.
+      const el = document.getElementById(id);
+      const v = el.value;
+      // aceita vírgula do teclado numérico convertendo para ponto
+      const s = String(v).replace(',', '.');
+      const n = Number(s);
+      return Number.isFinite(n) ? n : 0;
+    }
+    function setText(id, text){ document.getElementById(id).innerText = text; }
+
+    function mround(value, multiple){
+      if(!Number.isFinite(value) || !Number.isFinite(multiple) || multiple === 0) return NaN;
+      return Math.round(value / multiple) * multiple;
+    }
+
+    // === FÓRMULAS ===
+    // F14 =SE(F2<500;ARREDMULTB(F2/5;1);SE(F2<1100;ARREDMULTB((F2-500)/6+100;1);SE(F2<1800;ARREDMULTB((F2-1100)/7+200;1);SE(F2<2600;ARREDMULTB((F2-1800)/8+300;1);ARREDMULTB((F2-2600)/9+400;1)))))
+    function calcF14(F2){
+      if (F2 < 500)  return mround(F2/5, 1);
+      if (F2 < 1100) return mround((F2-500)/6 + 100, 1);
+      if (F2 < 1800) return mround((F2-1100)/7 + 200, 1);
+      if (F2 < 2600) return mround((F2-1800)/8 + 300, 1);
+      return mround((F2-2600)/9 + 400, 1);
+    }
+
+    // F15 =ROUNDDOWN(F3*140*(1+F8)/25 + 140*(1+F8)/4, 0)
+    function calcF15(F3, F8){
+      return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4);
+    }
+
+    // F16 =(ROUNDDOWN((F9*F7*6),0) + ROUNDDOWN(((F9*2)-(ROUNDDOWN((F9*F7*6),0)))*F6,0)) / (F9*2)
+    function calcF16(F9, F7, F6){
+      const part1 = Math.floor(F9*F7*6);
+      const part2 = Math.floor(((F9*2) - part1) * F6);
+      return (part1 + part2) / (F9*2);
+    }
+
+    // F17 =(ROUNDDOWN((F9*F7*6),0) * 15 / (F9*2)) / 100
+    function calcF17(F9, F7){
+      const part1 = Math.floor(F9*F7*6);
+      return (part1 * 15 / (F9*2)) / 100;
+    }
+
+    // F20 =(F14 + ROUNDDOWN(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4,0) + F5) * (1 + (F16)*80/100 + F17)
+    function calcF20(F14, F3, F8, F5, F16, F17){
+      const baseRight = Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4);
+      return (F14 + baseRight + F5) * (1 + (F16)*0.8 + F17);
+    }
+
+    // F21 =(F14 + F15 + F5) * (1 + (F16*100/100 + F17))
+    function calcF21(F14, F15, F5, F16, F17){
+      return (F14 + F15 + F5) * (1 + (F16 + F17));
+    }
+
+    // F24 =(F14+F15+F5) * 0.03 * 0.25 * F11
+    function calcF24(F14, F15, F5, F11){
+      return (F14 + F15 + F5) * 0.03 * 0.25 * F11;
+    }
+
+    // F25 =IF(F21>F20, ROUND(F4*0.1,0)*(0.2485*1.12+0.0435*1.0864)*F11 , ROUND(F4*0.1,0)*(0.2485*1.096+0.0435*1.0864)*F11)
+    function calcF25(F21, F20, F4, F11){
+      const base = Math.round(F4*0.1);
+      const mult = (F21 > F20) ? (0.2485*1.12 + 0.0435*1.0864) : (0.2485*1.096 + 0.0435*1.0864);
+      return base * mult * F11;
+    }
+
+    // F26 =(((ARREDONDAR.PARA.BAIXO(ARREDONDAR.PARA.BAIXO(6/5*(48);0)*(ARREDONDAR.PARA.BAIXO(F4;0)+4)/28;0)))-((ARREDONDAR.PARA.BAIXO(ARREDONDAR.PARA.BAIXO(6/5*(46);0)*(ARREDONDAR.PARA.BAIXO(F4;0)+4)/28;0))))*0,5*1,0864*F12
+    //  → em JS (com ponto decimal): (((floor(floor(6/5*48)*(floor(F4)+4)/28)) - (floor(floor(6/5*46)*(floor(F4)+4)/28))) * 0.5 * 1.0864 * F12)
+    function calcF26(F4, F12){
+      const innerA = Math.floor((6/5)*48);
+      const innerB = Math.floor((6/5)*46);
+      const termA = Math.floor(innerA * (Math.floor(F4) + 4) / 28);
+      const termB = Math.floor(innerB * (Math.floor(F4) + 4) / 28);
+      const diff = termA - termB;
+      return diff * 0.5 * 1.0864 * F12;
+    }
+
+    // === Execução ===
+    function rodarCalculadora(){
+      const F2  = getNum('level');
+      const F3  = getNum('magicLevel');
+      const F4  = getNum('distance');
+      const F5  = getNum('pontosWheel');
+      const F6  = getNum('chanceCrit');
+      const F7  = getNum('chanceLegs');
+      const F8  = getNum('baseMasSan');
+      const F9  = getNum('flechasHora');
+      const F11 = getNum('holyWeak');
+      const F12 = getNum('physWeak');
+
+      const F14 = calcF14(F2);
+      const F15 = calcF15(F3, F8);
+      const F16 = calcF16(F9, F7, F6);
+      const F17 = calcF17(F9, F7);
+      const F20 = calcF20(F14, F3, F8, F5, F16, F17);
+      const F21 = calcF21(F14, F15, F5, F16, F17);
+      const F24 = calcF24(F14, F15, F5, F11);
+      const F25 = calcF25(F21, F20, F4, F11);
+      const F26 = calcF26(F4, F12);
+
+      setText('outF14', F14);
+      setText('outF15', F15);
+      setText('outF16', (F16*100).toFixed(4) + ' %');
+      setText('outF17', (F17*100).toFixed(4) + ' %');
+      setText('outF20', Number(F20.toFixed(6)));
+      setText('outF21', Number(F21.toFixed(6)));
+      setText('outF24', Number(F24.toFixed(6)));
+      setText('outF25', Number(F25.toFixed(6)));
+      setText('outF26', Number(F26.toFixed(6)));
+
+      // persistência simples
+      const state = {F2,F3,F4,F5,F6,F7,F8,F9,F11,F12};
+      try{ localStorage.setItem('calc_state', JSON.stringify(state)); }catch(e){}
+    }
+
+    // Auto-cálculo enquanto digita
+    const ids = ['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', rodarCalculadora);
+      el.addEventListener('change', rodarCalculadora);
+    });
+
+    // Botões
+    document.getElementById('calcBtn').addEventListener('click', rodarCalculadora);
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      ids.forEach(id => document.getElementById(id).value = '');
+      ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id => setText(id, '--'));
+      try{ localStorage.removeItem('calc_state'); }catch(e){}
+      document.getElementById('statusText').innerText = '';
+    });
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      const txt = [
+        'F14 (Level dmg): ' + document.getElementById('outF14').innerText,
+        'F15 (Base dmg): ' + document.getElementById('outF15').innerText,
+        'F16 (Crit ajustada): ' + document.getElementById('outF16').innerText,
+        'F17 (Bonus legs→avatar3): ' + document.getElementById('outF17').innerText,
+        'F20: ' + document.getElementById('outF20').innerText,
+        'F21: ' + document.getElementById('outF21').innerText,
+        'F24: ' + document.getElementById('outF24').innerText,
+        'F25: ' + document.getElementById('outF25').innerText,
+        'F26: ' + document.getElementById('outF26').innerText,
+      ].join('\\n');
+      try{
+        await navigator.clipboard.writeText(txt);
+        document.getElementById('statusText').innerText = 'Resultados copiados ✔';
+        setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
+      }catch(e){
+        document.getElementById('statusText').innerText = 'Não foi possível copiar.';
+        setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
+      }
+    });
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const s = {
+        F2: getNum('level'), F3: getNum('magicLevel'), F4: getNum('distance'),
+        F5: getNum('pontosWheel'), F6: getNum('chanceCrit'), F7: getNum('chanceLegs'),
+        F8: getNum('baseMasSan'), F9: getNum('flechasHora'), F11: getNum('holyWeak'), F12: getNum('physWeak')
+      };
+      const o = {
+        F14: document.getElementById('outF14').innerText,
+        F15: document.getElementById('outF15').innerText,
+        F16: document.getElementById('outF16').innerText,
+        F17: document.getElementById('outF17').innerText,
+        F20: document.getElementById('outF20').innerText,
+        F21: document.getElementById('outF21').innerText,
+        F24: document.getElementById('outF24').innerText,
+        F25: document.getElementById('outF25').innerText,
+        F26: document.getElementById('outF26').innerText,
+      };
+      const headers = Object.keys(s).concat(Object.keys(o));
+      const values  = Object.values(s).concat(Object.values(o));
+      const csv = headers.join(',') + '\\n' + values.join(',');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const now = new Date().toISOString().replaceAll(':','-').slice(0,19);
+      a.href = url; a.download = 'calculadora-' + now + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
+    });
+
+    // Restaurar estado salvo (se houver) e computar ao abrir
+    (function restoreAndRun(){
+      try{
+        const raw = localStorage.getItem('calc_state');
+        if(raw){
+          const st = JSON.parse(raw);
+          const set = (id, val) => { if (val !== undefined && val !== null) document.getElementById(id).value = val; };
+          set('level', st.F2); set('magicLevel', st.F3); set('distance', st.F4); set('pontosWheel', st.F5);
+          set('chanceCrit', st.F6); set('chanceLegs', st.F7); set('baseMasSan', st.F8); set('flechasHora', st.F9);
+          set('holyWeak', st.F11); set('physWeak', st.F12);
+        }
+      }catch(e){}
+      rodarCalculadora();
+    })();
+  </script>
+</body>
+</html>

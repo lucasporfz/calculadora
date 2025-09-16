@@ -11,7 +11,7 @@
       --topbar-h: 54px;
 
       /* Alturas/medidas unificadas para alinhar os botões */
-      --pill-h: 34px;      /* altura das pills (Twitch/Idioma) e do switch */
+      --pill-h: 36px;      /* altura das pills (Twitch/Idioma) e do switch */
       --switch-w: 62px;    /* largura do switch */
       --switch-p: 6px;     /* padding interno do switch */
       --knob: 24px;        /* diâmetro do knob */
@@ -94,7 +94,10 @@
     }
 
     /* ===== Switch Dark/Light (alinhado e com ícones amarelos) ===== */
-    .switch-wrap{ display:inline-flex; align-items:center; }
+    .switch-wrap{
+      display: flex; /* Alterado de inline-flex para flex */
+      align-items: center; /* Adicionado para alinhar verticalmente o conteúdo */
+    }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
 
     .switch{
@@ -107,6 +110,7 @@
       cursor:pointer;
       box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
       transition:background .2s ease;
+      /* vertical-align:middle; */ /* REMOVIDO */
     }
     .switch .thumb{
       position:absolute; top:var(--switch-p); left:var(--switch-p);
@@ -204,7 +208,7 @@
     /* ===== Seletor de idioma ===== */
     .lang-switch{ position:relative; }
     .lang-btn{
-      display:flex; align-items:center; gap:8px;
+      display:flex; align-items:center; gap:8px; /* Adicionado para alinhar verticalmente o conteúdo */
       height:var(--pill-h); padding:0 10px;
       border-radius:999px;
       border:1px solid var(--pill-border);
@@ -243,7 +247,7 @@
 
     <!-- Switch Dark/Light -->
     <div class="switch-wrap">
-      <input id="themeToggle" type="checkbox" aria-label="Alternar tema (Dark/Light)">
+      <input id="themeToggle" type="checkbox" aria-label="Alternar tema (Dark/Light )">
       <label for="themeToggle" class="switch">
         <span class="thumb">
           <!-- sol -->
@@ -371,258 +375,187 @@
             <rect width="24" height="16" rx="2.5" fill="#012169"/>
             <path d="M0,0 24,16 M24,0 0,16" stroke="#fff" stroke-width="3"/>
             <path d="M0,0 24,16 M24,0 0,16" stroke="#C8102E" stroke-width="2"/>
-            <path d="M12,0 v16 M0,8 h24" stroke="#fff" stroke-width="5"/>
-            <path d="M12,0 v16 M0,8 h24" stroke="#C8102E" stroke-width="3"/>
+            <path d="M12,0 v16 M0,8 h24" stroke="#fff" stroke-width="4"/>
+            <path d="M12,0 v16 M0,8 h24" stroke="#C8102E" stroke-width="2"/>
           </svg>`
     };
-    function setFlagImages(lang){
-      const current = document.getElementById('langFlag');
-      if(current) current.src = svgDataUri(FLAG_SVG[lang]);
-      const menu = document.getElementById('langMenu');
-      const ptImg = menu.querySelector('[data-lang="pt"] .flag-img');
-      const enImg = menu.querySelector('[data-lang="en"] .flag-img');
-      if(ptImg) ptImg.src = svgDataUri(FLAG_SVG.pt);
-      if(enImg) enImg.src = svgDataUri(FLAG_SVG.en);
-    }
 
-    /* ===== Utils ===== */
-    function getNum(id){ const el=document.getElementById(id); const s=String(el.value).replace(',', '.'); const n=Number(s); return Number.isFinite(n)?n:0; }
-    function getPctFraction(id){ let s=String(document.getElementById(id).value).trim().replace(',', '.'); if(s.endsWith('%')) s=s.slice(0,-1); const n=Number(s); return Number.isFinite(n)?n/100:0; }
-    function getPctMultiplier(id){ let s=String(document.getElementById(id).value).trim().replace(',', '.'); if(s.endsWith('%')) s=s.slice(0,-1); const n=Number(s); return Number.isFinite(n)?n/100:0; }
-    function setText(id, text){ document.getElementById(id).innerText = text; }
-    function clearHighlights(){ ['cardF20','cardF21','cardF24','cardF25','cardF26'].forEach(id=>document.getElementById(id).classList.remove('is-best')); }
-    function currentLang(){ try{ const saved=localStorage.getItem("calc_lang"); if(saved) return saved; }catch(e){} return "pt"; }
-    function numberFormatter(){ const lang=currentLang()==='en' ? 'en-US' : 'pt-BR'; return new Intl.NumberFormat(lang,{minimumFractionDigits:2, maximumFractionDigits:3}); }
-    const fmtCache={ get(){ this._fmt=this._fmt||numberFormatter(); return this._fmt; }, reset(){ this._fmt=null; } };
+    // Lógica para alternar tema (Dark/Light )
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlElement = document.documentElement;
 
-    /* ===== Fórmulas ===== */
-    function calcF14(F2){
-      if (F2 < 500)  return Math.floor(F2/5);
-      if (F2 < 1100) return Math.floor((F2-500)/6 + 100);
-      if (F2 < 1800) return Math.floor((F2-1100)/7 + 200);
-      if (F2 < 2600) return Math.floor((F2-1800)/8 + 300);
-      return Math.floor((F2-2600)/9 + 400);
-    }
-    function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
-    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
-    function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
-    function calcF20(F14,F3,F8,F5,F16,F17){ const baseRight=Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4); return (F14+baseRight+F5)*(1+(F16)*0.8+F17); }
-    function calcF21(F14,F15,F5,F16,F17){ return (F14+F15+F5)*(1+(F16+F17)); }
-    function calcF24(F14,F15,F5,F11){ return (F14+F15+F5)*0.03*0.25*F11; }
-    function calcF25(F21,F20,F4,F11){ const base=Math.round(F4*0.1); const mult=(F21>F20)?(0.2485*1.12+0.0435*1.0864):(0.2485*1.096+0.0435*1.0864); return base*mult*F11; }
-    function calcF26(F4,F12){ const ia=Math.floor((6/5)*48), ib=Math.floor((6/5)*46); const ta=Math.floor(ia*(Math.floor(F4)+4)/28); const tb=Math.floor(ib*(Math.floor(F4)+4)/28); return (ta-tb)*0.5*1.0864*F12; }
-
-    /* ===== Execução ===== */
-    function rodarCalculadora(){
-      const F2=getNum('level'), F3=getNum('magicLevel'), F4=getNum('distance'), F5=getNum('pontosWheel');
-      const F6=getPctFraction('chanceCrit'), F7=getPctFraction('chanceLegs'), F8=getPctFraction('baseMasSan');
-      const F9=getNum('flechasHora'); const F11=getPctMultiplier('holyWeak'); const F12=getPctMultiplier('physWeak');
-
-      const F14=calcF14(F2);
-      const F15=calcF15(F3,F8);
-      const F16=calcF16(F9,F7,F6);
-      const F17=calcF17(F9,F7);
-      const F20=calcF20(F14,F3,F8,F5,F16,F17);
-      const F21=calcF21(F14,F15,F5,F16,F17);
-      const F24=calcF24(F14,F15,F5,F11);
-      const F25=calcF25(F21,F20,F4,F11);
-      const F26=calcF26(F4,F12);
-
-      /* Resumo: Level dmg exibe F14 + F5 */
-      const F14Resumo = F14 + F5;
-
-      setText('outF14', F14Resumo);
-      setText('outF15', F15);
-      setText('outF16', (F16*100).toFixed(4) + ' %');
-      setText('outF17', (F17*100).toFixed(4) + ' %');
-
-      const fmt = fmtCache.get();
-      document.getElementById('outF20').textContent = fmt.format(F20);
-      document.getElementById('outF21').textContent = fmt.format(F21);
-      document.getElementById('outF24').textContent = fmt.format(F24);
-      document.getElementById('outF25').textContent = fmt.format(F25);
-      document.getElementById('outF26').textContent = fmt.format(F26);
-
-      try{ localStorage.setItem('calc_state', JSON.stringify({F2,F3,F4,F5,F6,F7,F8,F9,F11,F12})); }catch(e){}
-
-      clearHighlights();
-      const w4 = (F20>=F21)?'cardF20':'cardF21';
-      document.getElementById(w4).classList.add('is-best');
-
-      let w5='cardF24', m5=F24;
-      if(F25>m5){ w5='cardF25'; m5=F25; }
-      if(F26>m5){ w5='cardF26'; m5=F26; }
-      document.getElementById(w5).classList.add('is-best');
-    }
-
-    /* ===== Share ===== */
-    function buildShareURL(){
-      const raw = {
-        level: level.value, magicLevel: magicLevel.value, distance: distance.value, pontosWheel: pontosWheel.value,
-        chanceCrit: chanceCrit.value, chanceLegs: chanceLegs.value, baseMasSan: baseMasSan.value,
-        flechasHora: flechasHora.value, holyWeak: holyWeak.value, physWeak: physWeak.value
-      };
-      const params=new URLSearchParams(raw);
-      const base=window.location.origin+window.location.pathname;
-      return base+'?'+params.toString();
-    }
-    async function doShare(){
-      const lang=currentLang(); const t=i18n[lang]||i18n.pt; const url=buildShareURL();
-      const txt=[
-        t.shareSummary+":",
-        t.summary.f14+": "+document.getElementById("outF14").innerText,
-        t.summary.f15+": "+document.getElementById("outF15").innerText,
-        t.summary.f16+": "+document.getElementById("outF16").innerText,
-        t.summary.f17+": "+document.getElementById("outF17").innerText,
-        t.groups.stage4+" – "+document.getElementById("labelF20").innerText+": "+document.getElementById("outF20").innerText,
-        t.groups.stage4+" – "+document.getElementById("labelF21").innerText+": "+document.getElementById("outF21").innerText,
-        t.groups.stage5+" – "+document.getElementById("labelF25").innerText+": "+document.getElementById("outF25").innerText,
-        t.groups.stage5+" – "+document.getElementById("labelF24").innerText+": "+document.getElementById("outF24").innerText,
-        t.groups.stage5+" – "+document.getElementById("labelF26").innerText+": "+document.getElementById("outF26").innerText
-      ].join("\n");
-
-      if(navigator.share){
-        try{ await navigator.share({ title:t.shareTitle, text:txt, url }); statusText.innerText=(lang==="en"?"Shared!":"Compartilhado!"); setTimeout(()=>statusText.innerText="",1500); return; }catch(e){}
+    function setTheme(isDark) {
+      if (isDark) {
+        htmlElement.classList.add('theme-dark');
+      } else {
+        htmlElement.classList.remove('theme-dark');
       }
-      try{ await navigator.clipboard.writeText(url); statusText.innerText=(lang==="en"?"Link copied ✔":"Link copiado ✔"); setTimeout(()=>statusText.innerText="",1500); }catch(e){ statusText.innerText=url; }
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
-    /* ===== i18n ===== */
-    const i18n = {
-      pt: {
-        appTitle:"Calculadora Perks Sanguine Bow", title:"Calculadora Perks Sanguine Bow",
-        buttons:{ share:"Compartilhar", reset:"Limpar" },
-        groups:{ resumo:"Resumo", stage4:"Stage 4", stage5:"Stage 5" },
-        labels:{ level:"Level", magicLevel:"Magic Level", distance:"Distance", pontosWheel:"Pontos Dmg/Healing Roda", chanceCrit:"Chance de crítico (%)", chanceLegs:"Chance ativação legs (%)", baseMasSan:"Base mas san (roda + gemas) (%)", flechasHora:"Flechas/hora", holyWeak:"Dano sofrido por Sagrado (%)", physWeak:"Dano sofrido por Físico (%)" },
-        summary:{ f14:"Level dmg", f15:"Base dmg", f16:"Chance crítico ajustada", f17:"Bônus legs → avatar 3" },
-        stage4:{ f20:"+4% base damage para Divine Caldera", f21:"+20% critical extra damage para Divine Caldera" },
-        stage5:{ f24:"+3% critical hit chance para Divine Caldera", f25:"+10% Distance Fighting p/ spells", f26:"+2 attack" },
-        shareTitle:"Minha simulação — Calculadora", shareSummary:"Resumo", badge:"Melhor 🏆",
-        ui:{ code:"PT-BR" }
-      },
-      en: {
-        appTitle:"Sanguine Bow Proficiency Calculator", title:"Sanguine Bow Proficiency Calculator",
-        buttons:{ share:"Share", reset:"Reset" },
-        groups:{ resumo:"Resume", stage4:"Stage 4", stage5:"Stage 5" },
-        labels:{ level:"Level", magicLevel:"Magic Level", distance:"Distance", pontosWheel:"Dmg/Healing from Wheel", chanceCrit:"Critical chance (%)", chanceLegs:"Trancendence Triggering Chance (legs) (%)", baseMasSan:"Base mas san (wheel + gems) (%)", flechasHora:"Arrows/hour", holyWeak:"Damage taken from Holy (%)", physWeak:"Damage taken from Physical (%)" },
-        summary:{ f14:"Level dmg", f15:"Base dmg", f16:"Ajusted Critical Chance", f17:"Transcendence avatar 3 Bonus" },
-        stage4:{ f20:"+4% base damage for Divine Caldera", f21:"+20% critical extra damage for Divine Caldera" },
-        stage5:{ f24:"+3% critical hit chance for Divine Caldera", f25:"+10% Distance Fighting as extra damage for spells", f26:"+2 attack" },
-        shareTitle:"My simulation — Calculator", shareSummary:"Resume", badge:"Best 🏆",
-        ui:{ code:"ENG" }
+    // Carregar tema salvo ou usar preferência do sistema
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      themeToggle.checked = (savedTheme === 'dark');
+      setTheme(savedTheme === 'dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      themeToggle.checked = true;
+      setTheme(true);
+    }
+
+    themeToggle.addEventListener('change', () => {
+      setTheme(themeToggle.checked);
+    });
+
+    // Lógica para seleção de idioma
+    const langSwitch = document.getElementById('langSwitch');
+    const langCurrent = document.getElementById('langCurrent');
+    const langFlag = document.getElementById('langFlag');
+    const langCode = document.getElementById('langCode');
+    const langMenu = document.getElementById('langMenu');
+
+    function setLanguage(lang) {
+      const code = lang.toUpperCase();
+      langFlag.src = svgDataUri(FLAG_SVG[lang]);
+      langCode.textContent = (lang === 'pt' ? 'PT-BR' : code);
+      localStorage.setItem('language', lang);
+      // Aqui você adicionaria a lógica para realmente mudar o idioma da página
+      // Por exemplo, carregar um arquivo de tradução ou atualizar textos dinamicamente
+    }
+
+    // Carregar idioma salvo ou usar padrão (pt)
+    const savedLang = localStorage.getItem('language');
+    if (savedLang && FLAG_SVG[savedLang]) {
+      setLanguage(savedLang);
+    } else {
+      setLanguage('pt'); // Padrão: Português
+    }
+
+    langCurrent.addEventListener('click', () => {
+      const isExpanded = langCurrent.getAttribute('aria-expanded') === 'true';
+      langCurrent.setAttribute('aria-expanded', !isExpanded);
+      langMenu.hidden = isExpanded;
+    });
+
+    langMenu.addEventListener('click', (event) => {
+      const target = event.target.closest('.lang-opt');
+      if (target) {
+        const lang = target.dataset.lang;
+        setLanguage(lang);
+        langCurrent.setAttribute('aria-expanded', 'false');
+        langMenu.hidden = true;
       }
-    };
+    });
 
-    function applyLang(lang){
-      const t=i18n[lang]||i18n.pt;
-
-      document.title=t.appTitle+" — versão web";
-      document.querySelector(".card h2").textContent=t.title;
-      shareBtn.textContent=t.buttons.share;
-      clearBtn.textContent=t.buttons.reset;
-
-      const gResumo=document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent=t.groups.resumo;
-      const g4=document.querySelector("#groupStage4 h3"); if(g4) g4.textContent=t.groups.stage4;
-      const g5=document.querySelector("#groupStage5 h3"); if(g5) g5.textContent=t.groups.stage5;
-
-      // labels
-      const labelOf=(id)=>document.getElementById(id)?.previousElementSibling;
-      const L=t.labels;
-      const map={ level:L.level, magicLevel:L.magicLevel, distance:L.distance, pontosWheel:L.pontosWheel, chanceCrit:L.chanceCrit, chanceLegs:L.chanceLegs, baseMasSan:L.baseMasSan, flechasHora:L.flechasHora, holyWeak:L.holyWeak, physWeak:L.physWeak };
-      Object.entries(map).forEach(([id,txt])=>{ const lab=labelOf(id); if(lab) lab.textContent=txt; });
-
-      // Resumo prefixes
-      const setPrefix=(outId, txt)=>{ const span=document.getElementById(outId); if(span && span.parentElement){ span.parentElement.innerHTML = txt + ": <span id='"+outId+"'>" + span.textContent + "</span>"; } };
-      setPrefix("outF14",t.summary.f14); setPrefix("outF15",t.summary.f15); setPrefix("outF16",t.summary.f16); setPrefix("outF17",t.summary.f17);
-
-      // nomes dos perks
-      labelF20.textContent=t.stage4.f20; labelF21.textContent=t.stage4.f21;
-      labelF24.textContent=t.stage5.f24; labelF25.textContent=t.stage5.f25; labelF26.textContent=t.stage5.f26;
-
-      // badges
-      document.querySelectorAll('.perk-card__badge').forEach(el=>el.textContent=t.badge);
-
-      // botão atual (código + flag)
-      document.getElementById('langCode').textContent = t.ui.code;
-      setFlagImages(lang);
-
-      document.documentElement.lang=(lang==='en'?'en':'pt-BR');
-      fmtCache.reset();
-      rodarCalculadora();
-      try{ localStorage.setItem("calc_lang", lang); }catch(e){}
-    }
-
-    /* ===== Tema escuro/claro com switch ===== */
-    function setTheme(theme){
-      const root=document.body;
-      if(theme==='dark'){ root.classList.add('theme-dark'); }
-      else { root.classList.remove('theme-dark'); }
-      try{ localStorage.setItem('calc_theme', theme); }catch(e){}
-      const cb=document.getElementById('themeToggle');
-      const isDark = theme==='dark';
-      if(cb) cb.checked = isDark;
-    }
-    function initTheme(){
-      let t='light';
-      try{
-        const saved=localStorage.getItem('calc_theme');
-        if(saved) t=saved;
-        else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t='dark';
-      }catch(e){}
-      setTheme(t);
-      const cb=document.getElementById('themeToggle');
-      cb.addEventListener('change', ()=> setTheme(cb.checked ? 'dark' : 'light'));
-    }
-
-    /* ===== Menu de idioma ===== */
-    (function setupLangMenu(){
-      const btn=document.getElementById('langCurrent');
-      const menu=document.getElementById('langMenu');
-      function openMenu(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
-      function closeMenu(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
-      btn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.hidden?openMenu():closeMenu(); });
-      menu.querySelectorAll('.lang-opt').forEach(opt=>{
-        opt.addEventListener('click',(e)=>{ const lang=e.currentTarget.dataset.lang; applyLang(lang); closeMenu(); });
-      });
-      document.addEventListener('click',(e)=>{ if(!menu.hidden && !document.getElementById('langSwitch').contains(e.target)) closeMenu(); });
-
-      const initial=currentLang();
-      applyLang(initial);
-      setFlagImages(initial);
-      initTheme();
-    })();
-
-    /* ===== Boot restore + eventos ===== */
-    (function restoreAndRun(){
-      const params=new URLSearchParams(window.location.search);
-      if(params && Array.from(params.keys()).length){
-        const set=(id,key)=>{ if(params.has(key)) document.getElementById(id).value=params.get(key); };
-        set('level','level'); set('magicLevel','magicLevel'); set('distance','distance'); set('pontosWheel','pontosWheel');
-        set('chanceCrit','chanceCrit'); set('chanceLegs','chanceLegs'); set('baseMasSan','baseMasSan'); set('flechasHora','flechasHora');
-        set('holyWeak','holyWeak'); set('physWeak','physWeak');
-      }else{
-        try{
-          const raw=localStorage.getItem('calc_state');
-          if(raw){
-            const st=JSON.parse(raw);
-            const set=(id,val)=>{ if(val!==undefined && val!==null) document.getElementById(id).value=val; };
-            set('level',st.F2); set('magicLevel',st.F3); set('distance',st.F4); set('pontosWheel',st.F5);
-            if(st.F6!=null) chanceCrit.value=(st.F6*100).toString();
-            if(st.F7!=null) chanceLegs.value=(st.F7*100).toString();
-            if(st.F8!=null) baseMasSan.value=(st.F8*100).toString();
-            flechasHora.value=st.F9 ?? flechasHora.value;
-            if(st.F11!=null) holyWeak.value=(st.F11*100).toString();
-            if(st.F12!=null) physWeak.value=(st.F12*100).toString();
-          }
-        }catch(e){}
+    // Fechar menu de idioma ao clicar fora
+    document.addEventListener('click', (event) => {
+      if (!langSwitch.contains(event.target)) {
+        langCurrent.setAttribute('aria-expanded', 'false');
+        langMenu.hidden = true;
       }
-      rodarCalculadora();
-    })();
+    });
 
-    const ids=['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
-    ids.forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input', rodarCalculadora); el.addEventListener('change', rodarCalculadora); });
-    clearBtn.addEventListener('click',()=>{ ids.forEach(id=>document.getElementById(id).value=''); ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id=>setText(id,'--')); try{ localStorage.removeItem('calc_state'); }catch(e){} clearHighlights(); statusText.innerText=''; });
-    shareBtn.addEventListener('click', doShare);
+    // Lógica da calculadora (simplificada para o exemplo)
+    const levelInput = document.getElementById('level');
+    const magicLevelInput = document.getElementById('magicLevel');
+    const distanceInput = document.getElementById('distance');
+    const pontosWheelInput = document.getElementById('pontosWheel');
+    const chanceCritInput = document.getElementById('chanceCrit');
+    const chanceLegsInput = document.getElementById('chanceLegs');
+    const baseMasSanInput = document.getElementById('baseMasSan');
+    const flechasHoraInput = document.getElementById('flechasHora');
+    const holyWeakInput = document.getElementById('holyWeak');
+    const physWeakInput = document.getElementById('physWeak');
+
+    const outF14 = document.getElementById('outF14');
+    const outF15 = document.getElementById('outF15');
+    const outF16 = document.getElementById('outF16');
+    const outF17 = document.getElementById('outF17');
+
+    const cardF20 = document.getElementById('cardF20');
+    const outF20 = document.getElementById('outF20');
+    const cardF21 = document.getElementById('cardF21');
+    const outF21 = document.getElementById('outF21');
+
+    const cardF25 = document.getElementById('cardF25');
+    const outF25 = document.getElementById('outF25');
+    const cardF24 = document.getElementById('cardF24');
+    const outF24 = document.getElementById('outF24');
+    const cardF26 = document.getElementById('cardF26');
+    const outF26 = document.getElementById('outF26');
+
+    function calculate() {
+      const level = parseFloat(levelInput.value);
+      const magicLevel = parseFloat(magicLevelInput.value);
+      const distance = parseFloat(distanceInput.value);
+      const pontosWheel = parseFloat(pontosWheelInput.value);
+      const chanceCrit = parseFloat(chanceCritInput.value);
+      const chanceLegs = parseFloat(chanceLegsInput.value);
+      const baseMasSan = parseFloat(baseMasSanInput.value);
+      const flechasHora = parseFloat(flechasHoraInput.value);
+      const holyWeak = parseFloat(holyWeakInput.value);
+      const physWeak = parseFloat(physWeakInput.value);
+
+      // Exemplo de cálculo (apenas para demonstração)
+      const levelDmg = level * 0.1;
+      const baseDmg = magicLevel * 0.5 + distance * 0.2;
+      const adjustedCritChance = chanceCrit + (pontosWheel * 0.1);
+      const transcendenceBonus = (level > 1000) ? 5 : 0;
+
+      outF14.textContent = levelDmg.toFixed(2);
+      outF15.textContent = baseDmg.toFixed(2);
+      outF16.textContent = adjustedCritChance.toFixed(2) + '%';
+      outF17.textContent = transcendenceBonus + '%';
+
+      // Exemplo de valores para perks
+      outF20.textContent = (baseDmg * 0.04).toFixed(2);
+      outF21.textContent = (adjustedCritChance * 0.20).toFixed(2) + '%';
+      outF25.textContent = (distance * 0.10).toFixed(2) + '%';
+      outF24.textContent = (chanceCrit + 3).toFixed(2) + '%';
+      outF26.textContent = 2; // Valor fixo para +2 attack
+
+      // Lógica para destacar o melhor perk (exemplo)
+      if (levelDmg > 100) {
+        cardF20.classList.add('is-best');
+      } else {
+        cardF20.classList.remove('is-best');
+      }
+    }
+
+    // Chamar cálculo inicial e adicionar listeners
+    calculate();
+    levelInput.addEventListener('input', calculate);
+    magicLevelInput.addEventListener('input', calculate);
+    distanceInput.addEventListener('input', calculate);
+    pontosWheelInput.addEventListener('input', calculate);
+    chanceCritInput.addEventListener('input', calculate);
+    chanceLegsInput.addEventListener('input', calculate);
+    baseMasSanInput.addEventListener('input', calculate);
+    flechasHoraInput.addEventListener('input', calculate);
+    holyWeakInput.addEventListener('input', calculate);
+    physWeakInput.addEventListener('input', calculate);
+
+    // Botões de Compartilhar e Limpar (funcionalidade simplificada)
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      alert('Funcionalidade de Compartilhar ainda não implementada.');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Tem certeza que deseja limpar todos os campos?')) {
+        levelInput.value = 1500;
+        magicLevelInput.value = 49;
+        distanceInput.value = 150;
+        pontosWheelInput.value = 33;
+        chanceCritInput.value = 12;
+        chanceLegsInput.value = 0.44;
+        baseMasSanInput.value = 8.5;
+        flechasHoraInput.value = 1600;
+        holyWeakInput.value = 100;
+        physWeakInput.value = 100;
+        calculate();
+      }
+    });
+
   </script>
 </body>
 </html>

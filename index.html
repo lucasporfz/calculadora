@@ -21,9 +21,8 @@
     .results-group h3 { margin:0 0 10px; font-size:16px; }
     .result { background:white; padding:12px; border-radius:8px; border:1px solid #eee; font-weight:600; }
     .muted { color:#666; font-weight:500; }
-    .pill { display:inline-block; font-size:11px; padding:3px 6px; border-radius:999px; background:#eef2ff; color:#3730a3; margin-left:6px; font-weight:700; }
 
-    /* NOVO: lista de perks em 2 colunas (nome | valor) */
+    /* Lista de perks em 2 colunas (nome | valor) */
     .perk-list{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
     .perk-card{
       position:relative;
@@ -47,10 +46,10 @@
     .perk-card__num{
       font-size:clamp(1rem, 2.2vw, 1.25rem);
       font-weight:800; color:#111;
-      font-variant-numeric: tabular-nums lining-nums; /* números estáveis */
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
-    /* Destaque do vencedor do stage */
+    /* Destaque do vencedor */
     .perk-card.is-best{
       border:2px solid #16a34a;
       box-shadow:0 0 0 3px rgba(22,163,74,.15);
@@ -144,41 +143,41 @@
       </div>
     </div>
 
-    <!-- NOVO: Stage 4 em layout nome | valor -->
+    <!-- Stage 4 -->
     <div class="results-group" id="groupStage4">
-      <h3>Stage 4 <span class="pill" id="pillStage4" style="display:none">MAIOR</span></h3>
+      <h3>Stage 4</h3>
       <ul class="perk-list">
         <li class="perk-card" id="cardF20" title="">
           <div class="perk-card__name" id="labelF20">+4% base damage para Divine Caldera</div>
           <div class="perk-card__value"><span class="perk-card__num" id="outF20">--</span></div>
-          <div class="perk-card__badge">melhor do stage</div>
+          <div class="perk-card__badge" id="badgeF20">Melhor 🏆</div>
         </li>
         <li class="perk-card" id="cardF21" title="">
           <div class="perk-card__name" id="labelF21">+20% critical extra damage para Divine Caldera</div>
           <div class="perk-card__value"><span class="perk-card__num" id="outF21">--</span></div>
-          <div class="perk-card__badge">melhor do stage</div>
+          <div class="perk-card__badge" id="badgeF21">Melhor 🏆</div>
         </li>
       </ul>
     </div>
 
-    <!-- NOVO: Stage 5 em layout nome | valor -->
+    <!-- Stage 5 (ordem alterada: +10% Distance primeiro) -->
     <div class="results-group" id="groupStage5">
-      <h3>Stage 5 <span class="pill" id="pillStage5" style="display:none">MAIOR</span></h3>
+      <h3>Stage 5</h3>
       <ul class="perk-list">
-        <li class="perk-card" id="cardF24" title="">
-          <div class="perk-card__name" id="labelF24">+3% critical hit chance para Divine Caldera</div>
-          <div class="perk-card__value"><span class="perk-card__num" id="outF24">--</span></div>
-          <div class="perk-card__badge">melhor do stage</div>
-        </li>
         <li class="perk-card" id="cardF25" title="">
           <div class="perk-card__name" id="labelF25">+10% Distance Fighting p/ spells</div>
           <div class="perk-card__value"><span class="perk-card__num" id="outF25">--</span></div>
-          <div class="perk-card__badge">melhor do stage</div>
+          <div class="perk-card__badge" id="badgeF25">Melhor 🏆</div>
+        </li>
+        <li class="perk-card" id="cardF24" title="">
+          <div class="perk-card__name" id="labelF24">+3% critical hit chance para Divine Caldera</div>
+          <div class="perk-card__value"><span class="perk-card__num" id="outF24">--</span></div>
+          <div class="perk-card__badge" id="badgeF24">Melhor 🏆</div>
         </li>
         <li class="perk-card" id="cardF26" title="">
           <div class="perk-card__name" id="labelF26">+2 attack</div>
           <div class="perk-card__value"><span class="perk-card__num" id="outF26">--</span></div>
-          <div class="perk-card__badge">melhor do stage</div>
+          <div class="perk-card__badge" id="badgeF26">Melhor 🏆</div>
         </li>
       </ul>
     </div>
@@ -192,14 +191,12 @@
       const n = Number(s);
       return Number.isFinite(n) ? n : 0;
     }
-    // % → fração (12 => 0.12)
     function getPctFraction(id){
       let s = String(document.getElementById(id).value).trim().replace(',', '.');
       if (s.endsWith('%')) s = s.slice(0,-1);
       const n = Number(s);
       return Number.isFinite(n) ? n/100 : 0;
     }
-    // % → multiplicador (100 => 1, 120 => 1.2)
     function getPctMultiplier(id){
       let s = String(document.getElementById(id).value).trim().replace(',', '.');
       if (s.endsWith('%')) s = s.slice(0,-1);
@@ -211,11 +208,9 @@
       ['cardF20','cardF21','cardF24','cardF25','cardF26'].forEach(id=>{
         document.getElementById(id).classList.remove('is-best');
       });
-      document.getElementById('pillStage4').style.display = 'none';
-      document.getElementById('pillStage5').style.display = 'none';
     }
 
-    // Formatadores (PT/EN) com números tabulados
+    // i18n helpers
     function currentLang(){
       try{
         const saved = localStorage.getItem("calc_lang");
@@ -275,12 +270,12 @@
       const F3  = getNum('magicLevel');
       const F4  = getNum('distance');
       const F5  = getNum('pontosWheel');
-      const F6  = getPctFraction('chanceCrit');      // % → fração
-      const F7  = getPctFraction('chanceLegs');      // % → fração
-      const F8  = getPctFraction('baseMasSan');      // % → fração
+      const F6  = getPctFraction('chanceCrit');
+      const F7  = getPctFraction('chanceLegs');
+      const F8  = getPctFraction('baseMasSan');
       const F9  = getNum('flechasHora');
-      const F11 = getPctMultiplier('holyWeak');      // % → multiplicador
-      const F12 = getPctMultiplier('physWeak');      // % → multiplicador
+      const F11 = getPctMultiplier('holyWeak');
+      const F12 = getPctMultiplier('physWeak');
 
       const F14 = calcF14(F2);
       const F15 = calcF15(F3, F8);
@@ -292,13 +287,11 @@
       const F25 = calcF25(F21, F20, F4, F11);
       const F26 = calcF26(F4, F12);
 
-      // Resumo
       setText('outF14', F14);
       setText('outF15', F15);
       setText('outF16', (F16*100).toFixed(4) + ' %');
       setText('outF17', (F17*100).toFixed(4) + ' %');
 
-      // Valores formatados (tabular) para perks
       const fmt = fmtCache.get();
       document.getElementById('outF20').textContent = fmt.format(F20);
       document.getElementById('outF21').textContent = fmt.format(F21);
@@ -308,20 +301,18 @@
 
       try{ localStorage.setItem('calc_state', JSON.stringify({F2,F3,F4,F5,F6,F7,F8,F9,F11,F12})); }catch(e){}
 
-      // Destaques (winners)
+      // Destaques
       clearHighlights();
       const winnerStage4 = (F20 >= F21) ? 'cardF20' : 'cardF21';
       document.getElementById(winnerStage4).classList.add('is-best');
-      document.getElementById('pillStage4').style.display = 'inline-block';
 
       let winner5 = 'cardF24'; let max5 = F24;
       if(F25 > max5){ winner5='cardF25'; max5 = F25; }
       if(F26 > max5){ winner5='cardF26'; max5 = F26; }
       document.getElementById(winner5).classList.add('is-best');
-      document.getElementById('pillStage5').style.display = 'inline-block';
     }
 
-    // Deep link share
+    // Share
     function buildShareURL(){
       const raw = {
         level: document.getElementById('level').value,
@@ -352,8 +343,8 @@
         t.summary.f17 + ": " + document.getElementById("outF17").innerText,
         t.groups.stage4 + " – " + document.getElementById("labelF20").innerText + ": " + document.getElementById("outF20").innerText,
         t.groups.stage4 + " – " + document.getElementById("labelF21").innerText + ": " + document.getElementById("outF21").innerText,
-        t.groups.stage5 + " – " + document.getElementById("labelF24").innerText + ": " + document.getElementById("outF24").innerText,
         t.groups.stage5 + " – " + document.getElementById("labelF25").innerText + ": " + document.getElementById("outF25").innerText,
+        t.groups.stage5 + " – " + document.getElementById("labelF24").innerText + ": " + document.getElementById("outF24").innerText,
         t.groups.stage5 + " – " + document.getElementById("labelF26").innerText + ": " + document.getElementById("outF26").innerText
       ].join("\n");
 
@@ -425,7 +416,8 @@
           f26: "+2 attack"
         },
         shareTitle: "Minha simulação — Calculadora",
-        shareSummary: "Resumo"
+        shareSummary: "Resumo",
+        badge: "Melhor 🏆"
       },
       en: {
         appTitle: "Sanguine Bow Proficiency Calculator",
@@ -460,47 +452,32 @@
           f26: "+2 attack"
         },
         shareTitle: "My simulation — Calculator",
-        shareSummary: "Resume"
+        shareSummary: "Resume",
+        badge: "Best 🏆"
       }
     };
 
     function applyLang(lang){
       const t = i18n[lang] || i18n.pt;
-      // title e header
+
       document.title = t.appTitle + " — versão web";
       const h2 = document.querySelector(".card h2"); if(h2) h2.textContent = t.title;
 
-      // Botões
       const shareBtn = document.getElementById("shareBtn"); if(shareBtn) shareBtn.textContent = t.buttons.share;
       const clearBtn = document.getElementById("clearBtn"); if(clearBtn) clearBtn.textContent = t.buttons.reset;
       const langBtn = document.getElementById("langBtn"); if(langBtn) langBtn.textContent = t.buttons.lang;
 
-      // Grupos
       const gResumo = document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent = t.groups.resumo;
-      const g4 = document.querySelector("#groupStage4 h3"); if(g4) g4.firstChild.nodeValue = t.groups.stage4 + " ";
-      const g5 = document.querySelector("#groupStage5 h3"); if(g5) g5.firstChild.nodeValue = t.groups.stage5 + " ";
+      const g4 = document.querySelector("#groupStage4 h3"); if(g4) g4.textContent = t.groups.stage4;
+      const g5 = document.querySelector("#groupStage5 h3"); if(g5) g5.textContent = t.groups.stage5;
 
-      // Labels de inputs
+      // Labels
       const labelOf = (id) => document.getElementById(id)?.previousElementSibling;
       const L = t.labels;
-      const map = {
-        level: L.level,
-        magicLevel: L.magicLevel,
-        distance: L.distance,
-        pontosWheel: L.pontosWheel,
-        chanceCrit: L.chanceCrit,
-        chanceLegs: L.chanceLegs,
-        baseMasSan: L.baseMasSan,
-        flechasHora: L.flechasHora,
-        holyWeak: L.holyWeak,
-        physWeak: L.physWeak,
-      };
-      Object.entries(map).forEach(([id, text]) => {
-        const lab = labelOf(id);
-        if(lab) lab.textContent = text;
-      });
+      const map = { level:L.level, magicLevel:L.magicLevel, distance:L.distance, pontosWheel:L.pontosWheel, chanceCrit:L.chanceCrit, chanceLegs:L.chanceLegs, baseMasSan:L.baseMasSan, flechasHora:L.flechasHora, holyWeak:L.holyWeak, physWeak:L.physWeak };
+      Object.entries(map).forEach(([id, text]) => { const lab = labelOf(id); if(lab) lab.textContent = text; });
 
-      // Resumo (prefixos antes dos spans)
+      // Resumo
       const setPrefix = (outId, txt) => {
         const span = document.getElementById(outId);
         if(span && span.parentElement){
@@ -512,21 +489,23 @@
       setPrefix("outF16", t.summary.f16);
       setPrefix("outF17", t.summary.f17);
 
-      // NOVO: nomes dos perks (sem alterar os valores)
+      // Nomes dos perks
       document.getElementById("labelF20").textContent = t.stage4.f20;
       document.getElementById("labelF21").textContent = t.stage4.f21;
       document.getElementById("labelF24").textContent = t.stage5.f24;
       document.getElementById("labelF25").textContent = t.stage5.f25;
       document.getElementById("labelF26").textContent = t.stage5.f26;
 
-      // lang attr + reset do formatador numérico
+      // Badge traduzida
+      document.querySelectorAll('.perk-card__badge').forEach(el=>{ el.textContent = t.badge; });
+
       document.documentElement.lang = (lang === "en" ? "en" : "pt-BR");
-      fmtCache.reset(); // garante separadores corretos
-      rodarCalculadora(); // recalcula com novo formatter
+      fmtCache.reset();
+      rodarCalculadora();
       try{ localStorage.setItem("calc_lang", lang); }catch(e){}
     }
 
-    // Toggle language button + boot
+    // Toggle language + boot
     document.getElementById("langBtn").addEventListener("click", () => {
       const lang = currentLang();
       const next = (lang === "en") ? "pt" : "en";
@@ -534,7 +513,7 @@
     });
     (function initLang(){ applyLang(currentLang()); })();
 
-    // Boot: restaurar da URL/localStorage e calcular
+    // Restore e calcular
     (function restoreAndRun(){
       const params = new URLSearchParams(window.location.search);
       if(params && Array.from(params.keys()).length){

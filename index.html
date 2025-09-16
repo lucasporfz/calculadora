@@ -63,6 +63,30 @@
     }
     .perk-card.is-best .perk-card__badge{ display:inline-block; }
 
+    /* Switcher de idioma (estilo pill com menu) */
+    .lang-switch{ position:relative; }
+    .lang-btn{
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px; border:1px solid #d1d5db;
+      background:#111827; color:#e5e7eb; font-weight:700;
+    }
+    .lang-btn .flag{ font-size:18px; line-height:1; }
+    .lang-btn .code{ font-size:12px; opacity:.95; letter-spacing:.2px; }
+
+    .lang-menu{
+      position:absolute; top:110%; right:0; z-index:30;
+      background:#111827; color:#e5e7eb; border:1px solid #374151;
+      border-radius:12px; padding:6px; min-width:140px;
+      box-shadow:0 10px 22px rgba(0,0,0,.25);
+    }
+    .lang-opt{
+      display:flex; align-items:center; gap:8px; width:100%;
+      background:transparent; color:inherit; border:0; cursor:pointer;
+      padding:8px 10px; border-radius:10px; font-weight:700;
+    }
+    .lang-opt .flag{ font-size:18px; }
+    .lang-opt:hover{ background:#1f2937; }
+
     @media (max-width: 720px){
       .grid { grid-template-columns: 1fr; }
       .perk-card{ grid-template-columns: 1fr; }
@@ -73,7 +97,21 @@
 </head>
 <body>
   <div class="card">
-    <div class="header"><h2>Calculadora Perks Sanguine Bow</h2><button class="btn gray small" id="langBtn">English</button></div>
+    <div class="header">
+      <h2>Calculadora Perks Sanguine Bow</h2>
+
+      <!-- BOTÃO DE IDIOMA COM MENU -->
+      <div class="lang-switch" id="langSwitch">
+        <button class="lang-btn" id="langCurrent" aria-haspopup="menu" aria-expanded="false">
+          <span class="flag" id="langFlag">🇧🇷</span>
+          <span class="code" id="langCode">PT-BR</span>
+        </button>
+        <div class="lang-menu" id="langMenu" hidden role="menu" aria-label="Selecionar idioma">
+          <button class="lang-opt" data-lang="pt" role="menuitem"><span class="flag">🇧🇷</span><span>PT-BR</span></button>
+          <button class="lang-opt" data-lang="en" role="menuitem"><span class="flag">🇬🇧</span><span>ENG</span></button>
+        </div>
+      </div>
+    </div>
 
     <div class="grid">
       <div>
@@ -160,7 +198,7 @@
       </ul>
     </div>
 
-    <!-- Stage 5 (ordem alterada: +10% Distance primeiro) -->
+    <!-- Stage 5 (ordem com +10% Distance primeiro) -->
     <div class="results-group" id="groupStage5">
       <h3>Stage 5</h3>
       <ul class="perk-list">
@@ -278,7 +316,6 @@
       const F12 = getPctMultiplier('physWeak');
 
       const F14 = calcF14(F2);
-      const F14Resumo = F14 + F5;
       const F15 = calcF15(F3, F8);
       const F16 = calcF16(F9, F7, F6);
       const F17 = calcF17(F9, F7);
@@ -287,6 +324,9 @@
       const F24 = calcF24(F14, F15, F5, F11);
       const F25 = calcF25(F21, F20, F4, F11);
       const F26 = calcF26(F4, F12);
+
+      // No resumo, você pediu para somar F5 ao Level dmg exibido
+      const F14Resumo = F14 + F5;
 
       setText('outF14', F14Resumo);
       setText('outF15', F15);
@@ -418,7 +458,8 @@
         },
         shareTitle: "Minha simulação — Calculadora",
         shareSummary: "Resumo",
-        badge: "Melhor 🏆"
+        badge: "Melhor 🏆",
+        ui: { code: "PT-BR", flag: "🇧🇷", optPT: "PT-BR", optEN: "ENG" }
       },
       en: {
         appTitle: "Sanguine Bow Proficiency Calculator",
@@ -454,7 +495,8 @@
         },
         shareTitle: "My simulation — Calculator",
         shareSummary: "Resume",
-        badge: "Best 🏆"
+        badge: "Best 🏆",
+        ui: { code: "ENG", flag: "🇬🇧", optPT: "PT-BR", optEN: "ENG" }
       }
     };
 
@@ -466,8 +508,8 @@
 
       const shareBtn = document.getElementById("shareBtn"); if(shareBtn) shareBtn.textContent = t.buttons.share;
       const clearBtn = document.getElementById("clearBtn"); if(clearBtn) clearBtn.textContent = t.buttons.reset;
-      const langBtn = document.getElementById("langBtn"); if(langBtn) langBtn.textContent = t.buttons.lang;
 
+      // Grupos
       const gResumo = document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent = t.groups.resumo;
       const g4 = document.querySelector("#groupStage4 h3"); if(g4) g4.textContent = t.groups.stage4;
       const g5 = document.querySelector("#groupStage5 h3"); if(g5) g5.textContent = t.groups.stage5;
@@ -500,19 +542,53 @@
       // Badge traduzida
       document.querySelectorAll('.perk-card__badge').forEach(el=>{ el.textContent = t.badge; });
 
+      // Atualiza ícone/label do botão atual
+      document.getElementById('langFlag').textContent = t.ui.flag;
+      document.getElementById('langCode').textContent = t.ui.code;
+
       document.documentElement.lang = (lang === "en" ? "en" : "pt-BR");
       fmtCache.reset();
       rodarCalculadora();
       try{ localStorage.setItem("calc_lang", lang); }catch(e){}
     }
 
-    // Toggle language + boot
-    document.getElementById("langBtn").addEventListener("click", () => {
-      const lang = currentLang();
-      const next = (lang === "en") ? "pt" : "en";
-      applyLang(next);
-    });
-    (function initLang(){ applyLang(currentLang()); })();
+    // Toggle do menu de idioma
+    (function setupLangMenu(){
+      const btn = document.getElementById('langCurrent');
+      const menu = document.getElementById('langMenu');
+
+      function openMenu(){
+        menu.hidden = false;
+        btn.setAttribute('aria-expanded','true');
+      }
+      function closeMenu(){
+        menu.hidden = true;
+        btn.setAttribute('aria-expanded','false');
+      }
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(menu.hidden) openMenu(); else closeMenu();
+      });
+
+      // clique nas opções
+      menu.querySelectorAll('.lang-opt').forEach(opt=>{
+        opt.addEventListener('click', (e)=>{
+          const lang = e.currentTarget.dataset.lang;
+          applyLang(lang);
+          closeMenu();
+        });
+      });
+
+      // clique fora fecha
+      document.addEventListener('click', (e)=>{
+        if(!menu.hidden && !document.getElementById('langSwitch').contains(e.target)){
+          closeMenu();
+        }
+      });
+
+      // Inicia na língua salva
+      applyLang(currentLang());
+    })();
 
     // Restore e calcular
     (function restoreAndRun(){
@@ -540,6 +616,9 @@
       }
       rodarCalculadora();
     })();
+
+    // Botões share/clear
+    document.getElementById('shareBtn').addEventListener('click', doShare);
   </script>
 </body>
 </html>

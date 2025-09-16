@@ -98,40 +98,64 @@
     }
 
     /* container da direita: garante MESMO eixo */
-    .topbar-right{
-      display:flex; align-items:center; gap:var(--ui-gap);
-    }
+   .topbar-right{
+  display:flex;
+  align-items:center;
+  gap:var(--ui-gap);
+}
 
-    /* ===== Switch Dark/Light ===== */
-    .switch-wrap{ display:flex; align-items:center; }
-    #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
+/* garante que cada filho (switch/idioma) fique centralizado no eixo Y */
+.topbar-right > *{
+  align-self:center;
+}
 
-    .switch{
-      position:relative;
-      width:var(--switch-w); height:var(--ui-h); padding:0 10px;
-      background:var(--sw-off);
-      border-radius:999px;
-      display:flex; align-items:center;
-      padding:var(--switch-p);
-      cursor:pointer;
-      box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
-      transition:background .2s ease;
-    }
-    .switch .thumb{
-      position:absolute; top:var(--switch-p); left:var(--switch-p);
-      width:var(--knob); height:var(--knob); background:var(--sw-thumb); border-radius:50%;
-      display:grid; place-items:center;
-      box-shadow:0 2px 6px rgba(0,0,0,.25);
-      transition:transform .25s cubic-bezier(.2,.8,.2,1);
-    }
-    .icon-sun svg, .icon-moon svg{ width:16px; height:16px; fill:#FFD54A; } /* sol/lua amarelos */
-    #themeToggle:checked + .switch{ background:var(--sw-on); }
-    /* deslocamento preciso: largura − knob − 2*padding */
-    #themeToggle:checked + .switch .thumb{
-      transform: translateX(calc(var(--switch-w) - var(--knob) - (var(--switch-p) * 2)));
-    }
-    #themeToggle:checked + .switch .icon-sun{ display:none; }
-    #themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
+
+/* ===== Switch Dark/Light ===== */
+.switch-wrap{
+  display:flex; align-items:center; /* garante o mesmo eixo dos outros botões */
+  height: var(--ui-h);
+}
+#themeToggle{ position:absolute; width:0; height:0; opacity:0; }
+
+.switch{
+  position:relative;
+  width:var(--switch-w);
+  height:var(--ui-h);
+  background:var(--sw-off);
+  border-radius:999px;
+  display:flex; align-items:center;
+  padding:var(--switch-p);              /* REMOVIDO o padding:0 10px */
+  cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
+  transition:background .2s ease;
+}
+
+/* knob centralizado verticalmente */
+.switch .thumb{
+  position:absolute; left:var(--switch-p); top:50%;
+  width:var(--knob); height:var(--knob);
+  background:var(--sw-thumb); border-radius:50%;
+  display:grid; place-items:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  transform: translateY(-50%);         /* CENTRALIZA */
+  transition:transform .25s cubic-bezier(.2,.8,.2,1);
+}
+
+/* sol/lua amarelos */
+.icon-sun svg, .icon-moon svg{ width:16px; height:16px; fill:#FFD54A; }
+
+#themeToggle:checked + .switch{ background:var(--sw-on); }
+
+/* deslocamento horizontal preciso: (largura − knob − 2*padding) */
+#themeToggle:checked + .switch .thumb{
+  transform: translateY(-50%)
+             translateX(calc(var(--switch-w) - var(--knob) - (var(--switch-p) * 2)));
+}
+
+/* alterna ícones */
+#themeToggle:checked + .switch .icon-sun{ display:none; }
+#themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
+
 
     /* ===== Seletor de idioma ===== */
     .lang-switch{ position:relative; display:flex; align-items:center; }

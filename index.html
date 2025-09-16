@@ -36,8 +36,6 @@
       --sw-on:#4f46e5;   /* Indigo (Dark) */
       --sw-off:#b45309;  /* Orange (Light) */
       --sw-thumb:#ffffff;
-      --sw-icon-dark:#273265;  /* lua */
-      --sw-icon-light:#a33d00; /* sol */
     }
     .theme-dark{
       --bg:#0b1020;
@@ -56,10 +54,8 @@
       --input-border-hover:#304069;
       --focus-ring: rgba(59,130,246,.30);
 
-      --sw-on:#4f46e5;   /* mantém o azul para Dark */
-      --sw-off:#b45309;  /* mantém o laranja para Light */
-      --sw-icon-dark:#19224e;
-      --sw-icon-light:#c14b00;
+      --sw-on:#4f46e5;
+      --sw-off:#b45309;
     }
 
     /* ===== Resets úteis ===== */
@@ -85,38 +81,38 @@
 
     .twitch-btn{
       display:inline-flex; align-items:center; gap:8px;
-      padding:8px 12px; border-radius:999px;
+      height:32px; padding:0 12px; border-radius:999px;
       background:var(--twitch); color:#fff; text-decoration:none; font-weight:700;
       box-shadow:0 6px 18px rgba(0,0,0,.15);
       white-space:nowrap;
     }
 
-    /* ===== Switch Dark/Light ===== */
-    .switch-wrap{ display:inline-block; }
+    /* ===== Switch Dark/Light (centralizado + ícones amarelos) ===== */
+    .switch-wrap{ display:inline-block; vertical-align:middle; }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
+
     .switch{
-      position:relative; width:54px; height:28px;
-      background:var(--sw-off); border-radius:999px;
-      display:inline-block; padding:3px; cursor:pointer;
+      position:relative;
+      width:54px; height:32px;                 /* mesma altura das pills */
+      background:var(--sw-off);
+      border-radius:999px;
+      display:inline-block;
+      padding:4px;                              /* centraliza o knob */
+      cursor:pointer;
+      vertical-align:middle;                    /* alinhado com os outros botões */
       box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
-      transition: background .2s ease;
+      transition:background .2s ease;
     }
     .switch .thumb{
-      position:absolute; top:3px; left:3px;
-      width:22px; height:22px; background:var(--sw-thumb); border-radius:50%;
+      position:absolute; top:4px; left:4px;
+      width:24px; height:24px; background:var(--sw-thumb); border-radius:50%;
       display:grid; place-items:center;
       box-shadow:0 2px 6px rgba(0,0,0,.25);
-      transition: transform .25s cubic-bezier(.2,.8,.2,1);
+      transition:transform .25s cubic-bezier(.2,.8,.2,1);
     }
-    /* ícones dentro do knob */
-    .icon-sun, .icon-moon{ width:14px; height:14px; display:block; }
-    .icon-sun svg{ fill:var(--sw-icon-light); }
-    .icon-moon svg{ fill:var(--sw-icon-dark); }
-
-    /* estado: DARK (checked) -> trilho azul e knob à direita com lua */
+    .icon-sun svg, .icon-moon svg{ width:16px; height:16px; fill:#FFD54A; } /* sol/lua amarelos */
     #themeToggle:checked + .switch{ background:var(--sw-on); }
-    #themeToggle:checked + .switch .thumb{ transform: translateX(26px); }
-    /* mostra/oculta ícones */
+    #themeToggle:checked + .switch .thumb{ transform: translateX(22px); }   /* 54 - 24 - 8 = 22 */
     #themeToggle:checked + .switch .icon-sun{ display:none; }
     #themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
 
@@ -125,7 +121,7 @@
     .app { max-width:min(1280px, 96vw); margin:0 auto 16px; }
 
     .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
-    .app h2{ margin:8px 8px 16px; text-align:center; } /* <-- centralizado */
+    .app h2{ margin:8px 8px 16px; text-align:center; } /* título centralizado */
 
     /* ===== Layout principal (desktop: 2 colunas, altura da viewport) ===== */
     .desktop-grid{ display:grid; gap:16px; }
@@ -200,7 +196,8 @@
     .lang-switch{ position:relative; }
     .lang-btn{
       display:flex; align-items:center; gap:8px;
-      padding:6px 10px; border-radius:999px;
+      height:32px; padding:0 10px;
+      border-radius:999px;
       border:1px solid var(--pill-border);
       background:var(--pill-bg); color:var(--pill-text);
       font-weight:800; box-shadow:0 4px 14px rgba(2,6,23,.15);
@@ -220,11 +217,11 @@
     /* Responsivo topo -> botões menores */
     @media (max-width: 640px){
       .topbar{ gap:6px; }
-      .twitch-btn{ padding:6px 10px; }
-      .lang-btn{ padding:6px 10px; }
-      .switch{ width:48px; height:26px; }
-      .switch .thumb{ width:20px; height:20px; }
-      #themeToggle:checked + .switch .thumb{ transform: translateX(22px); }
+      .twitch-btn{ height:30px; }
+      .lang-btn{ height:30px; }
+      .switch{ width:48px; height:28px; }
+      .switch .thumb{ width:22px; height:22px; top:3px; left:3px; }
+      #themeToggle:checked + .switch .thumb{ transform: translateX(20px); }
     }
   </style>
 </head>
@@ -319,12 +316,12 @@
               <li class="perk-card" id="cardF20">
                 <div class="perk-card__name" id="labelF20">+4% base damage para Divine Caldera</div>
                 <div class="perk-card__value"><span class="perk-card__num" id="outF20">--</span></div>
-                <div class="perk-card__badge" id="badgeF20">Melhor 🏆</div>
+                <div class="perk-card__badge">Melhor 🏆</div>
               </li>
               <li class="perk-card" id="cardF21">
                 <div class="perk-card__name" id="labelF21">+20% critical extra damage para Divine Caldera</div>
                 <div class="perk-card__value"><span class="perk-card__num" id="outF21">--</span></div>
-                <div class="perk-card__badge" id="badgeF21">Melhor 🏆</div>
+                <div class="perk-card__badge">Melhor 🏆</div>
               </li>
             </ul>
           </div>
@@ -335,17 +332,17 @@
               <li class="perk-card" id="cardF25">
                 <div class="perk-card__name" id="labelF25">+10% Distance Fighting p/ spells</div>
                 <div class="perk-card__value"><span class="perk-card__num" id="outF25">--</span></div>
-                <div class="perk-card__badge" id="badgeF25">Melhor 🏆</div>
+                <div class="perk-card__badge">Melhor 🏆</div>
               </li>
               <li class="perk-card" id="cardF24">
                 <div class="perk-card__name" id="labelF24">+3% critical hit chance para Divine Caldera</div>
                 <div class="perk-card__value"><span class="perk-card__num" id="outF24">--</span></div>
-                <div class="perk-card__badge" id="badgeF24">Melhor 🏆</div>
+                <div class="perk-card__badge">Melhor 🏆</div>
               </li>
               <li class="perk-card" id="cardF26">
                 <div class="perk-card__name" id="labelF26">+2 attack</div>
                 <div class="perk-card__value"><span class="perk-card__num" id="outF26">--</span></div>
-                <div class="perk-card__badge" id="badgeF26">Melhor 🏆</div>
+                <div class="perk-card__badge">Melhor 🏆</div>
               </li>
             </ul>
           </div>
@@ -554,7 +551,6 @@
       if(theme==='dark'){ root.classList.add('theme-dark'); }
       else { root.classList.remove('theme-dark'); }
       try{ localStorage.setItem('calc_theme', theme); }catch(e){}
-      // Atualiza estado visual do switch
       const cb=document.getElementById('themeToggle');
       const isDark = theme==='dark';
       if(cb) cb.checked = isDark;
@@ -567,7 +563,6 @@
         else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t='dark';
       }catch(e){}
       setTheme(t);
-      // Ouve o clique no switch
       const cb=document.getElementById('themeToggle');
       cb.addEventListener('change', ()=> setTheme(cb.checked ? 'dark' : 'light'));
     }

@@ -10,6 +10,12 @@
     :root{
       --topbar-h: 54px;
 
+      /* Alturas/medidas unificadas para alinhar os botões */
+      --pill-h: 36px;      /* altura das pills (Twitch/Idioma) e do switch */
+      --switch-w: 62px;    /* largura do switch */
+      --switch-p: 6px;     /* padding interno do switch */
+      --knob: 24px;        /* diâmetro do knob */
+
       /* light */
       --bg:#f4f6f9;
       --fg:#111;
@@ -80,39 +86,43 @@
     .topbar .spacer{ flex:1; }
 
     .twitch-btn{
-      display:inline-flex; align-items:center; gap:8px;
-      height:32px; padding:0 12px; border-radius:999px;
+      display:flex; align-items:center; gap:8px;
+      height:var(--pill-h); padding:0 12px; border-radius:999px;
       background:var(--twitch); color:#fff; text-decoration:none; font-weight:700;
       box-shadow:0 6px 18px rgba(0,0,0,.15);
       white-space:nowrap;
     }
 
-    /* ===== Switch Dark/Light (centralizado + ícones amarelos) ===== */
-    .switch-wrap{ display:inline-block; vertical-align:middle; }
+    /* ===== Switch Dark/Light (alinhado e com ícones amarelos) ===== */
+    .switch-wrap{ display:inline-flex; align-items:center; }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
 
     .switch{
       position:relative;
-      width:54px; height:32px;                 /* mesma altura das pills */
+      width:var(--switch-w); height:var(--pill-h);
       background:var(--sw-off);
       border-radius:999px;
       display:inline-block;
-      padding:4px;                              /* centraliza o knob */
+      padding:var(--switch-p);
       cursor:pointer;
-      vertical-align:middle;                    /* alinhado com os outros botões */
       box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
       transition:background .2s ease;
+      vertical-align:middle;
     }
     .switch .thumb{
-      position:absolute; top:4px; left:4px;
-      width:24px; height:24px; background:var(--sw-thumb); border-radius:50%;
+      position:absolute; top:var(--switch-p); left:var(--switch-p);
+      width:var(--knob); height:var(--knob); background:var(--sw-thumb); border-radius:50%;
       display:grid; place-items:center;
       box-shadow:0 2px 6px rgba(0,0,0,.25);
       transition:transform .25s cubic-bezier(.2,.8,.2,1);
     }
     .icon-sun svg, .icon-moon svg{ width:16px; height:16px; fill:#FFD54A; } /* sol/lua amarelos */
+
     #themeToggle:checked + .switch{ background:var(--sw-on); }
-    #themeToggle:checked + .switch .thumb{ transform: translateX(22px); }   /* 54 - 24 - 8 = 22 */
+    /* deslocamento = largura - knob - 2*padding */
+    #themeToggle:checked + .switch .thumb{
+      transform: translateX(calc(var(--switch-w) - var(--knob) - (var(--switch-p) * 2)));
+    }
     #themeToggle:checked + .switch .icon-sun{ display:none; }
     #themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
 
@@ -196,7 +206,7 @@
     .lang-switch{ position:relative; }
     .lang-btn{
       display:flex; align-items:center; gap:8px;
-      height:32px; padding:0 10px;
+      height:var(--pill-h); padding:0 10px;
       border-radius:999px;
       border:1px solid var(--pill-border);
       background:var(--pill-bg); color:var(--pill-text);
@@ -214,14 +224,12 @@
     .lang-opt{ display:flex; align-items:center; gap:8px; width:100%; background:transparent; color:inherit; border:0; cursor:pointer; padding:8px 10px; border-radius:10px; font-weight:800; font-size:13px; }
     .lang-opt:hover{ background:#1f2937; }
 
-    /* Responsivo topo -> botões menores */
+    /* Responsivo: mantém tudo alinhado mas menor */
     @media (max-width: 640px){
+      :root{ --pill-h: 30px; --switch-w: 54px; --switch-p: 4px; --knob: 22px; }
       .topbar{ gap:6px; }
-      .twitch-btn{ height:30px; }
-      .lang-btn{ height:30px; }
-      .switch{ width:48px; height:28px; }
-      .switch .thumb{ width:22px; height:22px; top:3px; left:3px; }
-      #themeToggle:checked + .switch .thumb{ transform: translateX(20px); }
+      .twitch-btn{ padding:0 10px; }
+      .lang-btn{ padding:0 10px; }
     }
   </style>
 </head>

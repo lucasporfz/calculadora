@@ -31,6 +31,13 @@
       --brand:#2563eb;
       --twitch:#9146FF;
       --best:#16a34a;
+
+      /* switch */
+      --sw-on:#4f46e5;   /* Indigo (Dark) */
+      --sw-off:#b45309;  /* Orange (Light) */
+      --sw-thumb:#ffffff;
+      --sw-icon-dark:#273265;  /* lua */
+      --sw-icon-light:#a33d00; /* sol */
     }
     .theme-dark{
       --bg:#0b1020;
@@ -48,6 +55,11 @@
       --input-border:#263251;
       --input-border-hover:#304069;
       --focus-ring: rgba(59,130,246,.30);
+
+      --sw-on:#4f46e5;   /* mantém o azul para Dark */
+      --sw-off:#b45309;  /* mantém o laranja para Light */
+      --sw-icon-dark:#19224e;
+      --sw-icon-light:#c14b00;
     }
 
     /* ===== Resets úteis ===== */
@@ -78,30 +90,51 @@
       box-shadow:0 6px 18px rgba(0,0,0,.15);
       white-space:nowrap;
     }
-    .mode-btn{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:6px 12px; border-radius:999px; border:1px solid var(--pill-border);
-      background:var(--pill-bg); color:var(--pill-text); font-weight:800; cursor:pointer;
+
+    /* ===== Switch Dark/Light ===== */
+    .switch-wrap{ display:inline-block; }
+    #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
+    .switch{
+      position:relative; width:54px; height:28px;
+      background:var(--sw-off); border-radius:999px;
+      display:inline-block; padding:3px; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
+      transition: background .2s ease;
     }
-    .mode-btn .icon{ font-size:14px; }
+    .switch .thumb{
+      position:absolute; top:3px; left:3px;
+      width:22px; height:22px; background:var(--sw-thumb); border-radius:50%;
+      display:grid; place-items:center;
+      box-shadow:0 2px 6px rgba(0,0,0,.25);
+      transition: transform .25s cubic-bezier(.2,.8,.2,1);
+    }
+    /* ícones dentro do knob */
+    .icon-sun, .icon-moon{ width:14px; height:14px; display:block; }
+    .icon-sun svg{ fill:var(--sw-icon-light); }
+    .icon-moon svg{ fill:var(--sw-icon-dark); }
+
+    /* estado: DARK (checked) -> trilho azul e knob à direita com lua */
+    #themeToggle:checked + .switch{ background:var(--sw-on); }
+    #themeToggle:checked + .switch .thumb{ transform: translateX(26px); }
+    /* mostra/oculta ícones */
+    #themeToggle:checked + .switch .icon-sun{ display:none; }
+    #themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
 
     /* ===== Base ===== */
     body { font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--fg); padding-top:calc(var(--topbar-h) + 16px); }
     .app { max-width:min(1280px, 96vw); margin:0 auto 16px; }
 
     .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
-    .app h2{ margin:8px 8px 16px; }
+    .app h2{ margin:8px 8px 16px; text-align:center; } /* <-- centralizado */
 
     /* ===== Layout principal (desktop: 2 colunas, altura da viewport) ===== */
-    .desktop-grid{
-      display:grid; gap:16px;
-    }
+    .desktop-grid{ display:grid; gap:16px; }
     @media (min-width: 1100px){
       .desktop-grid{
         grid-template-columns: 1fr 1fr;
-        height: calc(100vh - var(--topbar-h) - 56px); /* topbar + margens */
+        height: calc(100vh - var(--topbar-h) - 56px);
       }
-      .pane{ overflow:hidden; padding-right:2px; }
+      .pane{ overflow:auto; padding-right:2px; }
     }
 
     .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
@@ -156,28 +189,11 @@
     }
     .perk-card:hover{ background:rgba(59,130,246,.04); border-color:#dfe6ff; }
     .theme-dark .perk-card:hover{ background:rgba(59,130,246,.08); border-color:#2e3f6b; }
-    .perk-card__name{
-      color:var(--fg); font-weight:600;
-      font-size:clamp(.92rem, 1.6vw, 1rem);
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-    }
+    .perk-card__name{ color:var(--fg); font-weight:600; font-size:clamp(.92rem, 1.6vw, 1rem); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .perk-card__value{ display:flex; align-items:flex-end; gap:4px; justify-self:end; text-align:right; line-height:1; }
-    .perk-card__num{
-      font-size:clamp(1rem, 2.2vw, 1.25rem);
-      font-weight:800; color:var(--fg);
-      font-variant-numeric: tabular-nums lining-nums;
-    }
-    .perk-card.is-best{
-      border:2px solid var(--best);
-      box-shadow:0 0 0 3px rgba(22,163,74,.15);
-    }
-    .perk-card__badge{
-      display:none;
-      position:absolute; top:-10px; right:10px;
-      background:var(--best); color:#062b1e; font-weight:800;
-      padding:2px 8px; border-radius:999px; font-size:.72rem;
-      box-shadow:0 6px 16px rgba(16,185,129,.35);
-    }
+    .perk-card__num{ font-size:clamp(1rem, 2.2vw, 1.25rem); font-weight:800; color:var(--fg); font-variant-numeric: tabular-nums lining-nums; }
+    .perk-card.is-best{ border:2px solid var(--best); box-shadow:0 0 0 3px rgba(22,163,74,.15); }
+    .perk-card__badge{ display:none; position:absolute; top:-10px; right:10px; background:var(--best); color:#062b1e; font-weight:800; padding:2px 8px; border-radius:999px; font-size:.72rem; box-shadow:0 6px 16px rgba(16,185,129,.35); }
     .perk-card.is-best .perk-card__badge{ display:inline-block; }
 
     /* ===== Seletor de idioma ===== */
@@ -190,11 +206,7 @@
       font-weight:800; box-shadow:0 4px 14px rgba(2,6,23,.15);
     }
     .lang-btn .code{ font-size:12px; letter-spacing:.2px; }
-    .flag-img{
-      width:20px; height:14px; border-radius:4px;
-      display:inline-block; vertical-align:middle;
-      box-shadow:0 0 0 1px rgba(255,255,255,.25) inset;
-    }
+    .flag-img{ width:20px; height:14px; border-radius:4px; display:inline-block; vertical-align:middle; box-shadow:0 0 0 1px rgba(255,255,255,.25) inset; }
     .lang-menu{
       position:absolute; top:110%; right:0; z-index:30;
       background:var(--pill-bg); color:var(--pill-text);
@@ -202,19 +214,17 @@
       border-radius:14px; padding:6px; min-width:150px;
       box-shadow:0 10px 22px rgba(0,0,0,.25);
     }
-    .lang-opt{
-      display:flex; align-items:center; gap:8px; width:100%;
-      background:transparent; color:inherit; border:0; cursor:pointer;
-      padding:8px 10px; border-radius:10px; font-weight:800; font-size:13px;
-    }
+    .lang-opt{ display:flex; align-items:center; gap:8px; width:100%; background:transparent; color:inherit; border:0; cursor:pointer; padding:8px 10px; border-radius:10px; font-weight:800; font-size:13px; }
     .lang-opt:hover{ background:#1f2937; }
 
-    /* Responsivo topo -> empilhar no mobile */
+    /* Responsivo topo -> botões menores */
     @media (max-width: 640px){
       .topbar{ gap:6px; }
       .twitch-btn{ padding:6px 10px; }
-      .mode-btn{ padding:6px 10px; }
       .lang-btn{ padding:6px 10px; }
+      .switch{ width:48px; height:26px; }
+      .switch .thumb{ width:20px; height:20px; }
+      #themeToggle:checked + .switch .thumb{ transform: translateX(22px); }
     }
   </style>
 </head>
@@ -227,10 +237,22 @@
 
     <div class="spacer"></div>
 
-    <button class="mode-btn" id="modeBtn" aria-label="Alternar tema">
-      <span class="icon" id="modeIcon">🌙</span>
-      <span id="modeText">Dark</span>
-    </button>
+    <!-- Switch Dark/Light -->
+    <div class="switch-wrap">
+      <input id="themeToggle" type="checkbox" aria-label="Alternar tema (Dark/Light)">
+      <label for="themeToggle" class="switch">
+        <span class="thumb">
+          <!-- sol -->
+          <span class="icon-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><g><rect x="11" y="1" width="2" height="4"/><rect x="11" y="19" width="2" height="4"/><rect x="1" y="11" width="4" height="2"/><rect x="19" y="11" width="4" height="2"/></g><g transform="rotate(45 12 12)"><rect x="11" y="1" width="2" height="4"/><rect x="11" y="19" width="2" height="4"/><rect x="1" y="11" width="4" height="2"/><rect x="19" y="11" width="4" height="2"/></g></svg>
+          </span>
+          <!-- lua -->
+          <span class="icon-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8z"/></svg>
+          </span>
+        </span>
+      </label>
+    </div>
 
     <!-- Idioma -->
     <div class="lang-switch" id="langSwitch">
@@ -526,15 +548,16 @@
       try{ localStorage.setItem("calc_lang", lang); }catch(e){}
     }
 
-    /* ===== Tema escuro/claro ===== */
+    /* ===== Tema escuro/claro com switch ===== */
     function setTheme(theme){
       const root=document.body;
       if(theme==='dark'){ root.classList.add('theme-dark'); }
       else { root.classList.remove('theme-dark'); }
       try{ localStorage.setItem('calc_theme', theme); }catch(e){}
-      const isDark = document.body.classList.contains('theme-dark');
-      document.getElementById('modeIcon').textContent = isDark ? '☀️' : '🌙';
-      document.getElementById('modeText').textContent = isDark ? 'Light' : 'Dark';
+      // Atualiza estado visual do switch
+      const cb=document.getElementById('themeToggle');
+      const isDark = theme==='dark';
+      if(cb) cb.checked = isDark;
     }
     function initTheme(){
       let t='light';
@@ -544,6 +567,9 @@
         else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t='dark';
       }catch(e){}
       setTheme(t);
+      // Ouve o clique no switch
+      const cb=document.getElementById('themeToggle');
+      cb.addEventListener('change', ()=> setTheme(cb.checked ? 'dark' : 'light'));
     }
 
     /* ===== Menu de idioma ===== */
@@ -562,10 +588,6 @@
       applyLang(initial);
       setFlagImages(initial);
       initTheme();
-      document.getElementById('modeBtn').addEventListener('click', ()=>{
-        const isDark=document.body.classList.contains('theme-dark');
-        setTheme(isDark?'light':'dark');
-      });
     })();
 
     /* ===== Boot restore + eventos ===== */

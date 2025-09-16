@@ -278,6 +278,7 @@
       const F12 = getPctMultiplier('physWeak');
 
       const F14 = calcF14(F2);
+      const F14Resumo = F14 + F5;
       const F15 = calcF15(F3, F8);
       const F16 = calcF16(F9, F7, F6);
       const F17 = calcF17(F9, F7);
@@ -287,7 +288,7 @@
       const F25 = calcF25(F21, F20, F4, F11);
       const F26 = calcF26(F4, F12);
 
-      setText('outF14', F14);
+      setText('outF14', F14Resumo);
       setText('outF15', F15);
       setText('outF16', (F16*100).toFixed(4) + ' %');
       setText('outF17', (F17*100).toFixed(4) + ' %');

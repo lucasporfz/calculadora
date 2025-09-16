@@ -82,7 +82,7 @@
       position:fixed; inset:0 0 auto 0; height:var(--topbar-h);
       background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0)) , var(--card);
       display:flex; align-items:center; gap:var(--ui-gap);
-      padding:11px 16px;
+      padding:11px 16px; /* 54px - 32px = 22px => 11px em cima/baixo para centrar */
       border-bottom:1px solid var(--border);
       z-index:50;
     }
@@ -100,19 +100,20 @@
     /* container da direita: garante MESMO eixo */
     .topbar-right{
       display:flex; align-items:center; gap:var(--ui-gap);
+      height:var(--ui-h); /* <- garante a altura base */
     }
 
     /* ===== Switch Dark/Light ===== */
-    .switch-wrap{ 
-      display:flex; 
-      align-items:center;
-      transform: translateY(2px);
+    .switch-wrap{
+      display:flex; align-items:center;
+      height:var(--ui-h);           /* <- mesma altura dos demais */
+      /* REMOVIDO: transform: translateY(2px); */
     }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
 
     .switch{
       position:relative;
-      width:var(--switch-w); height:var(--ui-h); padding:0 10px;
+      width:var(--switch-w); height:var(--ui-h);
       background:var(--sw-off);
       border-radius:999px;
       display:flex; align-items:center;
@@ -138,10 +139,14 @@
     #themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
 
     /* ===== Seletor de idioma ===== */
-    .lang-switch{ position:relative; display:flex; align-items:center; }
+    .lang-switch{
+      position:relative;
+      display:flex; align-items:center;
+      height:var(--ui-h);           /* <- mesma altura do switch */
+    }
     .lang-btn{
       display:flex; align-items:center; gap:8px;
-      height:var(--ui-h); padding:0 10px;
+      height:100%; padding:0 10px;
       border-radius:999px;
       border:1px solid var(--pill-border);
       background:var(--pill-bg); color:var(--pill-text);

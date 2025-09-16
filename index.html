@@ -4,25 +4,31 @@
   <meta charset="utf-8" />
   <title>Calculadora Perks Sanguine Bow — versão web</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
+
   <style>
-    /* Base */
+    /* ===== Base ===== */
+    :root{
+      --pill-bg:#0f172a;        /* navy escuro */
+      --pill-border:#1f2a44;
+      --pill-text:#e5e7eb;
+    }
     body { font-family: Inter, Arial, sans-serif; background:#f4f6f9; color:#111; padding:24px; }
-    .card { max-width:980px; margin:18px auto; background:white; padding:18px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    .card { max-width:980px; margin:18px auto; background:white; padding:18px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
     .grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
     label { display:block; font-size:13px; color:#333; margin-bottom:6px; }
-    input[type=number] { width:100%; padding:8px 10px; border-radius:8px; border:1px solid #ddd; font-size:14px; }
+    input[type=number] { width:100%; padding:12px 14px; border-radius:14px; border:1px solid #e6e6e6; font-size:15px; }
     .full { grid-column: 1 / -1; }
-    .btn { padding:10px 14px; background:#2563eb; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; }
+    .btn { padding:10px 14px; background:#2563eb; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600; }
     .btn.gray { background:#6b7280; }
     .btn.small { padding:8px 10px; font-size:13px; }
     .header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .toolbar { display:flex; gap:8px; flex-wrap:wrap; }
-    .results-group { margin-top:14px; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:10px; }
+    .results-group { margin-top:14px; padding:12px; background:#fafafa; border:1px solid #eee; border-radius:14px; }
     .results-group h3 { margin:0 0 10px; font-size:16px; }
-    .result { background:white; padding:12px; border-radius:8px; border:1px solid #eee; font-weight:600; }
+    .result { background:white; padding:12px; border-radius:12px; border:1px solid #eee; font-weight:600; }
     .muted { color:#666; font-weight:500; }
 
-    /* Lista de perks em 2 colunas (nome | valor) */
+    /* ===== Perks: layout nome | valor ===== */
     .perk-list{ list-style:none; padding:0; margin:0; display:grid; gap:12px; }
     .perk-card{
       position:relative;
@@ -32,7 +38,7 @@
       gap:14px;
       background:white;
       border:1px solid #eee;
-      border-radius:10px;
+      border-radius:12px;
       padding:12px 14px;
       transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
     }
@@ -49,7 +55,7 @@
       font-variant-numeric: tabular-nums lining-nums;
     }
 
-    /* Destaque do vencedor */
+    /* Vencedor */
     .perk-card.is-best{
       border:2px solid #16a34a;
       box-shadow:0 0 0 3px rgba(22,163,74,.15);
@@ -63,28 +69,34 @@
     }
     .perk-card.is-best .perk-card__badge{ display:inline-block; }
 
-    /* Switcher de idioma (estilo pill com menu) */
+    /* ===== Seletor de idioma ===== */
     .lang-switch{ position:relative; }
     .lang-btn{
       display:flex; align-items:center; gap:8px;
-      padding:8px 12px; border-radius:999px; border:1px solid #d1d5db;
-      background:#111827; color:#e5e7eb; font-weight:700;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--pill-border);
+      background:var(--pill-bg); color:var(--pill-text);
+      font-weight:800; box-shadow:0 4px 14px rgba(2,6,23,.15);
     }
-    .lang-btn .flag{ font-size:18px; line-height:1; }
-    .lang-btn .code{ font-size:12px; opacity:.95; letter-spacing:.2px; }
-
+    .lang-btn .code{ font-size:12px; letter-spacing:.2px; }
+    .flag-img{
+      width:20px; height:14px;             /* menor */
+      border-radius:4px;                    /* mais arredondada */
+      display:inline-block; vertical-align:middle;
+      box-shadow:0 0 0 1px rgba(255,255,255,.25) inset;
+    }
     .lang-menu{
       position:absolute; top:110%; right:0; z-index:30;
-      background:#111827; color:#e5e7eb; border:1px solid #374151;
-      border-radius:12px; padding:6px; min-width:140px;
+      background:var(--pill-bg); color:var(--pill-text);
+      border:1px solid var(--pill-border);
+      border-radius:14px; padding:6px; min-width:150px;
       box-shadow:0 10px 22px rgba(0,0,0,.25);
     }
     .lang-opt{
       display:flex; align-items:center; gap:8px; width:100%;
       background:transparent; color:inherit; border:0; cursor:pointer;
-      padding:8px 10px; border-radius:10px; font-weight:700;
+      padding:8px 10px; border-radius:10px; font-weight:800; font-size:13px;
     }
-    .lang-opt .flag{ font-size:18px; }
     .lang-opt:hover{ background:#1f2937; }
 
     @media (max-width: 720px){
@@ -100,69 +112,36 @@
     <div class="header">
       <h2>Calculadora Perks Sanguine Bow</h2>
 
-      <!-- BOTÃO DE IDIOMA COM MENU -->
+      <!-- Botão de idioma -->
       <div class="lang-switch" id="langSwitch">
         <button class="lang-btn" id="langCurrent" aria-haspopup="menu" aria-expanded="false">
-          <span class="flag" id="langFlag">🇧🇷</span>
+          <img class="flag-img" id="langFlag" alt="">
           <span class="code" id="langCode">PT-BR</span>
         </button>
         <div class="lang-menu" id="langMenu" hidden role="menu" aria-label="Selecionar idioma">
-          <button class="lang-opt" data-lang="pt" role="menuitem"><span class="flag">🇧🇷</span><span>PT-BR</span></button>
-          <button class="lang-opt" data-lang="en" role="menuitem"><span class="flag">🇬🇧</span><span>ENG</span></button>
+          <button class="lang-opt" data-lang="pt" role="menuitem">
+            <img class="flag-img" alt="" />
+            <span>PT-BR</span>
+          </button>
+          <button class="lang-opt" data-lang="en" role="menuitem">
+            <img class="flag-img" alt="" />
+            <span>ENG</span>
+          </button>
         </div>
       </div>
     </div>
 
     <div class="grid">
-      <div>
-        <label>Level</label>
-        <input id="level" type="number" value="1500">
-      </div>
-
-      <div>
-        <label>Magic Level</label>
-        <input id="magicLevel" type="number" value="49">
-      </div>
-
-      <div>
-        <label>Distance</label>
-        <input id="distance" type="number" value="150">
-      </div>
-
-      <div>
-        <label>Pontos Dmg/Healing Roda</label>
-        <input id="pontosWheel" type="number" value="33">
-      </div>
-
-      <div>
-        <label>Chance de crítico (%)</label>
-        <input id="chanceCrit" type="number" step="0.01" value="12">
-      </div>
-
-      <div>
-        <label>Chance ativação legs (%)</label>
-        <input id="chanceLegs" type="number" step="0.01" value="0.44">
-      </div>
-
-      <div>
-        <label>Base mas san (roda + gemas) (%)</label>
-        <input id="baseMasSan" type="number" step="0.1" value="8.5">
-      </div>
-
-      <div>
-        <label>Flechas/hora</label>
-        <input id="flechasHora" type="number" value="1600">
-      </div>
-
-      <div>
-        <label>Dano sofrido por Sagrado (%)</label>
-        <input id="holyWeak" type="number" step="1" value="100">
-      </div>
-
-      <div>
-        <label>Dano sofrido por Físico (%)</label>
-        <input id="physWeak" type="number" step="1" value="100">
-      </div>
+      <div><label>Level</label><input id="level" type="number" value="1500"></div>
+      <div><label>Magic Level</label><input id="magicLevel" type="number" value="49"></div>
+      <div><label>Distance</label><input id="distance" type="number" value="150"></div>
+      <div><label>Pontos Dmg/Healing Roda</label><input id="pontosWheel" type="number" value="33"></div>
+      <div><label>Chance de crítico (%)</label><input id="chanceCrit" type="number" step="0.01" value="12"></div>
+      <div><label>Chance ativação legs (%)</label><input id="chanceLegs" type="number" step="0.01" value="0.44"></div>
+      <div><label>Base mas san (roda + gemas) (%)</label><input id="baseMasSan" type="number" step="0.1" value="8.5"></div>
+      <div><label>Flechas/hora</label><input id="flechasHora" type="number" value="1600"></div>
+      <div><label>Dano sofrido por Sagrado (%)</label><input id="holyWeak" type="number" step="1" value="100"></div>
+      <div><label>Dano sofrido por Físico (%)</label><input id="physWeak" type="number" step="1" value="100"></div>
 
       <div class="full toolbar">
         <button class="btn" id="shareBtn">Compartilhar</button>
@@ -198,7 +177,7 @@
       </ul>
     </div>
 
-    <!-- Stage 5 (ordem com +10% Distance primeiro) -->
+    <!-- Stage 5 (Distance em primeiro) -->
     <div class="results-group" id="groupStage5">
       <h3>Stage 5</h3>
       <ul class="perk-list">
@@ -222,47 +201,43 @@
   </div>
 
   <script>
-    // === Utils ===
-    function getNum(id){
-      const el = document.getElementById(id);
-      const s = String(el.value).replace(',', '.');
-      const n = Number(s);
-      return Number.isFinite(n) ? n : 0;
+    /* ===== Flags em SVG (data URI) ===== */
+    function svgDataUri(svg){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.trim()); }
+    const FLAG_SVG = {
+      pt: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16">
+            <rect width="24" height="16" rx="2.5" fill="#009b3a"/>
+            <polygon points="12,2 22,8 12,14 2,8" fill="#ffdf00"/>
+            <circle cx="12" cy="8" r="4" fill="#002776"/>
+          </svg>`,
+      en: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 16">
+            <rect width="24" height="16" rx="2.5" fill="#012169"/>
+            <path d="M0,0 24,16 M24,0 0,16" stroke="#fff" stroke-width="3"/>
+            <path d="M0,0 24,16 M24,0 0,16" stroke="#C8102E" stroke-width="2"/>
+            <path d="M12,0 v16 M0,8 h24" stroke="#fff" stroke-width="5"/>
+            <path d="M12,0 v16 M0,8 h24" stroke="#C8102E" stroke-width="3"/>
+          </svg>`
+    };
+    function setFlagImages(lang){
+      const current = document.getElementById('langFlag');
+      if(current) current.src = svgDataUri(FLAG_SVG[lang]);
+      const menu = document.getElementById('langMenu');
+      const ptImg = menu.querySelector('[data-lang="pt"] .flag-img');
+      const enImg = menu.querySelector('[data-lang="en"] .flag-img');
+      if(ptImg) ptImg.src = svgDataUri(FLAG_SVG.pt);
+      if(enImg) enImg.src = svgDataUri(FLAG_SVG.en);
     }
-    function getPctFraction(id){
-      let s = String(document.getElementById(id).value).trim().replace(',', '.');
-      if (s.endsWith('%')) s = s.slice(0,-1);
-      const n = Number(s);
-      return Number.isFinite(n) ? n/100 : 0;
-    }
-    function getPctMultiplier(id){
-      let s = String(document.getElementById(id).value).trim().replace(',', '.');
-      if (s.endsWith('%')) s = s.slice(0,-1);
-      const n = Number(s);
-      return Number.isFinite(n) ? n/100 : 0;
-    }
+
+    /* ===== Utils ===== */
+    function getNum(id){ const el=document.getElementById(id); const s=String(el.value).replace(',', '.'); const n=Number(s); return Number.isFinite(n)?n:0; }
+    function getPctFraction(id){ let s=String(document.getElementById(id).value).trim().replace(',', '.'); if(s.endsWith('%')) s=s.slice(0,-1); const n=Number(s); return Number.isFinite(n)?n/100:0; }
+    function getPctMultiplier(id){ let s=String(document.getElementById(id).value).trim().replace(',', '.'); if(s.endsWith('%')) s=s.slice(0,-1); const n=Number(s); return Number.isFinite(n)?n/100:0; }
     function setText(id, text){ document.getElementById(id).innerText = text; }
-    function clearHighlights(){
-      ['cardF20','cardF21','cardF24','cardF25','cardF26'].forEach(id=>{
-        document.getElementById(id).classList.remove('is-best');
-      });
-    }
+    function clearHighlights(){ ['cardF20','cardF21','cardF24','cardF25','cardF26'].forEach(id=>document.getElementById(id).classList.remove('is-best')); }
+    function currentLang(){ try{ const saved=localStorage.getItem("calc_lang"); if(saved) return saved; }catch(e){} return "pt"; }
+    function numberFormatter(){ const lang=currentLang()==='en' ? 'en-US' : 'pt-BR'; return new Intl.NumberFormat(lang,{minimumFractionDigits:2, maximumFractionDigits:3}); }
+    const fmtCache={ get(){ this._fmt=this._fmt||numberFormatter(); return this._fmt; }, reset(){ this._fmt=null; } };
 
-    // i18n helpers
-    function currentLang(){
-      try{
-        const saved = localStorage.getItem("calc_lang");
-        if(saved) return saved;
-      }catch(e){}
-      return "pt";
-    }
-    function numberFormatter(){
-      const lang = currentLang()==='en' ? 'en-US' : 'pt-BR';
-      return new Intl.NumberFormat(lang, { minimumFractionDigits: 2, maximumFractionDigits: 3 });
-    }
-    const fmtCache = { get(){ this._fmt = this._fmt || numberFormatter(); return this._fmt; }, reset(){ this._fmt = null; } };
-
-    // === FÓRMULAS ===
+    /* ===== Fórmulas ===== */
     function calcF14(F2){
       if (F2 < 500)  return Math.floor(F2/5);
       if (F2 < 1100) return Math.floor((F2-500)/6 + 100);
@@ -270,62 +245,32 @@
       if (F2 < 2600) return Math.floor((F2-1800)/8 + 300);
       return Math.floor((F2-2600)/9 + 400);
     }
-    function calcF15(F3, F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
-    function calcF16(F9, F7, F6){
-      const part1 = Math.floor(F9*F7*6);
-      const part2 = Math.floor(((F9*2) - part1) * F6);
-      return (part1 + part2) / (F9*2);
-    }
-    function calcF17(F9, F7){
-      const part1 = Math.floor(F9*F7*6);
-      return (part1 * 15 / (F9*2)) / 100;
-    }
-    function calcF20(F14, F3, F8, F5, F16, F17){
-      const baseRight = Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4);
-      return (F14 + baseRight + F5) * (1 + (F16)*0.8 + F17);
-    }
-    function calcF21(F14, F15, F5, F16, F17){
-      return (F14 + F15 + F5) * (1 + (F16 + F17));
-    }
-    function calcF24(F14, F15, F5, F11){ return (F14 + F15 + F5) * 0.03 * 0.25 * F11; }
-    function calcF25(F21, F20, F4, F11){
-      const base = Math.round(F4*0.1);
-      const mult = (F21 > F20) ? (0.2485*1.12 + 0.0435*1.0864) : (0.2485*1.096 + 0.0435*1.0864);
-      return base * mult * F11;
-    }
-    function calcF26(F4, F12){
-      const innerA = Math.floor((6/5)*48);
-      const innerB = Math.floor((6/5)*46);
-      const termA = Math.floor(innerA * (Math.floor(F4) + 4) / 28);
-      const termB = Math.floor(innerB * (Math.floor(F4) + 4) / 28);
-      const diff = termA - termB;
-      return diff * 0.5 * 1.0864 * F12;
-    }
+    function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
+    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
+    function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
+    function calcF20(F14,F3,F8,F5,F16,F17){ const baseRight=Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4); return (F14+baseRight+F5)*(1+(F16)*0.8+F17); }
+    function calcF21(F14,F15,F5,F16,F17){ return (F14+F15+F5)*(1+(F16+F17)); }
+    function calcF24(F14,F15,F5,F11){ return (F14+F15+F5)*0.03*0.25*F11; }
+    function calcF25(F21,F20,F4,F11){ const base=Math.round(F4*0.1); const mult=(F21>F20)?(0.2485*1.12+0.0435*1.0864):(0.2485*1.096+0.0435*1.0864); return base*mult*F11; }
+    function calcF26(F4,F12){ const ia=Math.floor((6/5)*48), ib=Math.floor((6/5)*46); const ta=Math.floor(ia*(Math.floor(F4)+4)/28); const tb=Math.floor(ib*(Math.floor(F4)+4)/28); return (ta-tb)*0.5*1.0864*F12; }
 
-    // === Execução ===
+    /* ===== Execução ===== */
     function rodarCalculadora(){
-      const F2  = getNum('level');
-      const F3  = getNum('magicLevel');
-      const F4  = getNum('distance');
-      const F5  = getNum('pontosWheel');
-      const F6  = getPctFraction('chanceCrit');
-      const F7  = getPctFraction('chanceLegs');
-      const F8  = getPctFraction('baseMasSan');
-      const F9  = getNum('flechasHora');
-      const F11 = getPctMultiplier('holyWeak');
-      const F12 = getPctMultiplier('physWeak');
+      const F2=getNum('level'), F3=getNum('magicLevel'), F4=getNum('distance'), F5=getNum('pontosWheel');
+      const F6=getPctFraction('chanceCrit'), F7=getPctFraction('chanceLegs'), F8=getPctFraction('baseMasSan');
+      const F9=getNum('flechasHora'); const F11=getPctMultiplier('holyWeak'); const F12=getPctMultiplier('physWeak');
 
-      const F14 = calcF14(F2);
-      const F15 = calcF15(F3, F8);
-      const F16 = calcF16(F9, F7, F6);
-      const F17 = calcF17(F9, F7);
-      const F20 = calcF20(F14, F3, F8, F5, F16, F17);
-      const F21 = calcF21(F14, F15, F5, F16, F17);
-      const F24 = calcF24(F14, F15, F5, F11);
-      const F25 = calcF25(F21, F20, F4, F11);
-      const F26 = calcF26(F4, F12);
+      const F14=calcF14(F2);
+      const F15=calcF15(F3,F8);
+      const F16=calcF16(F9,F7,F6);
+      const F17=calcF17(F9,F7);
+      const F20=calcF20(F14,F3,F8,F5,F16,F17);
+      const F21=calcF21(F14,F15,F5,F16,F17);
+      const F24=calcF24(F14,F15,F5,F11);
+      const F25=calcF25(F21,F20,F4,F11);
+      const F26=calcF26(F4,F12);
 
-      // No resumo, você pediu para somar F5 ao Level dmg exibido
+      /* Resumo: Level dmg exibe F14 + F5 */
       const F14Resumo = F14 + F5;
 
       setText('outF14', F14Resumo);
@@ -342,283 +287,161 @@
 
       try{ localStorage.setItem('calc_state', JSON.stringify({F2,F3,F4,F5,F6,F7,F8,F9,F11,F12})); }catch(e){}
 
-      // Destaques
       clearHighlights();
-      const winnerStage4 = (F20 >= F21) ? 'cardF20' : 'cardF21';
-      document.getElementById(winnerStage4).classList.add('is-best');
+      const w4 = (F20>=F21)?'cardF20':'cardF21';
+      document.getElementById(w4).classList.add('is-best');
 
-      let winner5 = 'cardF24'; let max5 = F24;
-      if(F25 > max5){ winner5='cardF25'; max5 = F25; }
-      if(F26 > max5){ winner5='cardF26'; max5 = F26; }
-      document.getElementById(winner5).classList.add('is-best');
+      let w5='cardF24', m5=F24;
+      if(F25>m5){ w5='cardF25'; m5=F25; }
+      if(F26>m5){ w5='cardF26'; m5=F26; }
+      document.getElementById(w5).classList.add('is-best');
     }
 
-    // Share
+    /* ===== Share ===== */
     function buildShareURL(){
       const raw = {
-        level: document.getElementById('level').value,
-        magicLevel: document.getElementById('magicLevel').value,
-        distance: document.getElementById('distance').value,
-        pontosWheel: document.getElementById('pontosWheel').value,
-        chanceCrit: document.getElementById('chanceCrit').value,
-        chanceLegs: document.getElementById('chanceLegs').value,
-        baseMasSan: document.getElementById('baseMasSan').value,
-        flechasHora: document.getElementById('flechasHora').value,
-        holyWeak: document.getElementById('holyWeak').value,
-        physWeak: document.getElementById('physWeak').value,
+        level: level.value, magicLevel: magicLevel.value, distance: distance.value, pontosWheel: pontosWheel.value,
+        chanceCrit: chanceCrit.value, chanceLegs: chanceLegs.value, baseMasSan: baseMasSan.value,
+        flechasHora: flechasHora.value, holyWeak: holyWeak.value, physWeak: physWeak.value
       };
-      const params = new URLSearchParams(raw);
-      const base = window.location.origin + window.location.pathname;
-      return base + '?' + params.toString();
+      const params=new URLSearchParams(raw);
+      const base=window.location.origin+window.location.pathname;
+      return base+'?'+params.toString();
     }
-
     async function doShare(){
-      const lang = currentLang();
-      const t = i18n[lang] || i18n.pt;
-      const url = buildShareURL();
-      const txt = [
-        t.shareSummary + ":",
-        t.summary.f14 + ": " + document.getElementById("outF14").innerText,
-        t.summary.f15 + ": " + document.getElementById("outF15").innerText,
-        t.summary.f16 + ": " + document.getElementById("outF16").innerText,
-        t.summary.f17 + ": " + document.getElementById("outF17").innerText,
-        t.groups.stage4 + " – " + document.getElementById("labelF20").innerText + ": " + document.getElementById("outF20").innerText,
-        t.groups.stage4 + " – " + document.getElementById("labelF21").innerText + ": " + document.getElementById("outF21").innerText,
-        t.groups.stage5 + " – " + document.getElementById("labelF25").innerText + ": " + document.getElementById("outF25").innerText,
-        t.groups.stage5 + " – " + document.getElementById("labelF24").innerText + ": " + document.getElementById("outF24").innerText,
-        t.groups.stage5 + " – " + document.getElementById("labelF26").innerText + ": " + document.getElementById("outF26").innerText
+      const lang=currentLang(); const t=i18n[lang]||i18n.pt; const url=buildShareURL();
+      const txt=[
+        t.shareSummary+":",
+        t.summary.f14+": "+document.getElementById("outF14").innerText,
+        t.summary.f15+": "+document.getElementById("outF15").innerText,
+        t.summary.f16+": "+document.getElementById("outF16").innerText,
+        t.summary.f17+": "+document.getElementById("outF17").innerText,
+        t.groups.stage4+" – "+document.getElementById("labelF20").innerText+": "+document.getElementById("outF20").innerText,
+        t.groups.stage4+" – "+document.getElementById("labelF21").innerText+": "+document.getElementById("outF21").innerText,
+        t.groups.stage5+" – "+document.getElementById("labelF25").innerText+": "+document.getElementById("outF25").innerText,
+        t.groups.stage5+" – "+document.getElementById("labelF24").innerText+": "+document.getElementById("outF24").innerText,
+        t.groups.stage5+" – "+document.getElementById("labelF26").innerText+": "+document.getElementById("outF26").innerText
       ].join("\n");
 
-      if (navigator.share){
-        try{
-          await navigator.share({ title: t.shareTitle, text: txt, url });
-          document.getElementById('statusText').innerText = (lang === "en" ? "Shared!" : "Compartilhado!");
-          setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
-          return;
-        }catch(e){ /* fallback */ }
+      if(navigator.share){
+        try{ await navigator.share({ title:t.shareTitle, text:txt, url }); statusText.innerText=(lang==="en"?"Shared!":"Compartilhado!"); setTimeout(()=>statusText.innerText="",1500); return; }catch(e){}
       }
-      try{
-        await navigator.clipboard.writeText(url);
-        document.getElementById('statusText').innerText = (lang === "en" ? "Link copied ✔" : "Link copiado ✔");
-        setTimeout(()=> document.getElementById('statusText').innerText = '', 1500);
-      }catch(e){
-        document.getElementById('statusText').innerText = url;
-      }
+      try{ await navigator.clipboard.writeText(url); statusText.innerText=(lang==="en"?"Link copied ✔":"Link copiado ✔"); setTimeout(()=>statusText.innerText="",1500); }catch(e){ statusText.innerText=url; }
     }
 
-    // Eventos
-    const ids = ['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      el.addEventListener('input', rodarCalculadora);
-      el.addEventListener('change', rodarCalculadora);
-    });
-    document.getElementById('clearBtn').addEventListener('click', () => {
-      ids.forEach(id => document.getElementById(id).value = '');
-      ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id => setText(id, '--'));
-      try{ localStorage.removeItem('calc_state'); }catch(e){}
-      clearHighlights();
-      document.getElementById('statusText').innerText = '';
-    });
-    document.getElementById('shareBtn').addEventListener('click', doShare);
-
-    // === i18n ===
+    /* ===== i18n ===== */
     const i18n = {
       pt: {
-        appTitle: "Calculadora Perks Sanguine Bow",
-        title: "Calculadora Perks Sanguine Bow",
-        buttons: { share: "Compartilhar", reset: "Limpar", lang: "English" },
-        groups: { resumo: "Resumo", stage4: "Stage 4", stage5: "Stage 5" },
-        labels: {
-          level: "Level",
-          magicLevel: "Magic Level",
-          distance: "Distance",
-          pontosWheel: "Pontos Dmg/Healing Roda",
-          chanceCrit: "Chance de crítico (%)",
-          chanceLegs: "Chance ativação legs (%)",
-          baseMasSan: "Base mas san (roda + gemas) (%)",
-          flechasHora: "Flechas/hora",
-          holyWeak: "Dano sofrido por Sagrado (%)",
-          physWeak: "Dano sofrido por Físico (%)"
-        },
-        summary: {
-          f14: "Level dmg",
-          f15: "Base dmg",
-          f16: "Chance crítico ajustada",
-          f17: "Bônus legs → avatar 3"
-        },
-        stage4: {
-          f20: "+4% base damage para Divine Caldera",
-          f21: "+20% critical extra damage para Divine Caldera"
-        },
-        stage5: {
-          f24: "+3% critical hit chance para Divine Caldera",
-          f25: "+10% Distance Fighting p/ spells",
-          f26: "+2 attack"
-        },
-        shareTitle: "Minha simulação — Calculadora",
-        shareSummary: "Resumo",
-        badge: "Melhor 🏆",
-        ui: { code: "PT-BR", flag: "🇧🇷", optPT: "PT-BR", optEN: "ENG" }
+        appTitle:"Calculadora Perks Sanguine Bow", title:"Calculadora Perks Sanguine Bow",
+        buttons:{ share:"Compartilhar", reset:"Limpar" },
+        groups:{ resumo:"Resumo", stage4:"Stage 4", stage5:"Stage 5" },
+        labels:{ level:"Level", magicLevel:"Magic Level", distance:"Distance", pontosWheel:"Pontos Dmg/Healing Roda", chanceCrit:"Chance de crítico (%)", chanceLegs:"Chance ativação legs (%)", baseMasSan:"Base mas san (roda + gemas) (%)", flechasHora:"Flechas/hora", holyWeak:"Dano sofrido por Sagrado (%)", physWeak:"Dano sofrido por Físico (%)" },
+        summary:{ f14:"Level dmg", f15:"Base dmg", f16:"Chance crítico ajustada", f17:"Bônus legs → avatar 3" },
+        stage4:{ f20:"+4% base damage para Divine Caldera", f21:"+20% critical extra damage para Divine Caldera" },
+        stage5:{ f24:"+3% critical hit chance para Divine Caldera", f25:"+10% Distance Fighting p/ spells", f26:"+2 attack" },
+        shareTitle:"Minha simulação — Calculadora", shareSummary:"Resumo", badge:"Melhor 🏆",
+        ui:{ code:"PT-BR" }
       },
       en: {
-        appTitle: "Sanguine Bow Proficiency Calculator",
-        title: "Sanguine Bow Proficiency Calculator",
-        buttons: { share: "Share", reset: "Reset", lang: "Português" },
-        groups: { resumo: "Resume", stage4: "Stage 4", stage5: "Stage 5" },
-        labels: {
-          level: "Level",
-          magicLevel: "Magic Level",
-          distance: "Distance",
-          pontosWheel: "Dmg/Healing from Wheel",
-          chanceCrit: "Critical chance (%)",
-          chanceLegs: "Trancendence Triggering Chance (legs) (%)",
-          baseMasSan: "Base mas san (wheel + gems) (%)",
-          flechasHora: "Arrows/hour",
-          holyWeak: "Damage taken from Holy (%)",
-          physWeak: "Damage taken from Physical (%)"
-        },
-        summary: {
-          f14: "Level dmg",
-          f15: "Base dmg",
-          f16: "Ajusted Critical Chance",
-          f17: "Transcendence avatar 3 Bonus"
-        },
-        stage4: {
-          f20: "+4% base damage for Divine Caldera",
-          f21: "+20% critical extra damage for Divine Caldera"
-        },
-        stage5: {
-          f24: "+3% critical hit chance for Divine Caldera",
-          f25: "+10% Distance Fighting as extra damage for spells",
-          f26: "+2 attack"
-        },
-        shareTitle: "My simulation — Calculator",
-        shareSummary: "Resume",
-        badge: "Best 🏆",
-        ui: { code: "ENG", flag: "🇬🇧", optPT: "PT-BR", optEN: "ENG" }
+        appTitle:"Sanguine Bow Proficiency Calculator", title:"Sanguine Bow Proficiency Calculator",
+        buttons:{ share:"Share", reset:"Reset" },
+        groups:{ resumo:"Resume", stage4:"Stage 4", stage5:"Stage 5" },
+        labels:{ level:"Level", magicLevel:"Magic Level", distance:"Distance", pontosWheel:"Dmg/Healing from Wheel", chanceCrit:"Critical chance (%)", chanceLegs:"Trancendence Triggering Chance (legs) (%)", baseMasSan:"Base mas san (wheel + gems) (%)", flechasHora:"Arrows/hour", holyWeak:"Damage taken from Holy (%)", physWeak:"Damage taken from Physical (%)" },
+        summary:{ f14:"Level dmg", f15:"Base dmg", f16:"Ajusted Critical Chance", f17:"Transcendence avatar 3 Bonus" },
+        stage4:{ f20:"+4% base damage for Divine Caldera", f21:"+20% critical extra damage for Divine Caldera" },
+        stage5:{ f24:"+3% critical hit chance for Divine Caldera", f25:"+10% Distance Fighting as extra damage for spells", f26:"+2 attack" },
+        shareTitle:"My simulation — Calculator", shareSummary:"Resume", badge:"Best 🏆",
+        ui:{ code:"ENG" }
       }
     };
 
     function applyLang(lang){
-      const t = i18n[lang] || i18n.pt;
+      const t=i18n[lang]||i18n.pt;
 
-      document.title = t.appTitle + " — versão web";
-      const h2 = document.querySelector(".card h2"); if(h2) h2.textContent = t.title;
+      document.title=t.appTitle+" — versão web";
+      document.querySelector(".card h2").textContent=t.title;
+      shareBtn.textContent=t.buttons.share;
+      clearBtn.textContent=t.buttons.reset;
 
-      const shareBtn = document.getElementById("shareBtn"); if(shareBtn) shareBtn.textContent = t.buttons.share;
-      const clearBtn = document.getElementById("clearBtn"); if(clearBtn) clearBtn.textContent = t.buttons.reset;
+      const gResumo=document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent=t.groups.resumo;
+      const g4=document.querySelector("#groupStage4 h3"); if(g4) g4.textContent=t.groups.stage4;
+      const g5=document.querySelector("#groupStage5 h3"); if(g5) g5.textContent=t.groups.stage5;
 
-      // Grupos
-      const gResumo = document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent = t.groups.resumo;
-      const g4 = document.querySelector("#groupStage4 h3"); if(g4) g4.textContent = t.groups.stage4;
-      const g5 = document.querySelector("#groupStage5 h3"); if(g5) g5.textContent = t.groups.stage5;
+      // labels
+      const labelOf=(id)=>document.getElementById(id)?.previousElementSibling;
+      const L=t.labels;
+      const map={ level:L.level, magicLevel:L.magicLevel, distance:L.distance, pontosWheel:L.pontosWheel, chanceCrit:L.chanceCrit, chanceLegs:L.chanceLegs, baseMasSan:L.baseMasSan, flechasHora:L.flechasHora, holyWeak:L.holyWeak, physWeak:L.physWeak };
+      Object.entries(map).forEach(([id,txt])=>{ const lab=labelOf(id); if(lab) lab.textContent=txt; });
 
-      // Labels
-      const labelOf = (id) => document.getElementById(id)?.previousElementSibling;
-      const L = t.labels;
-      const map = { level:L.level, magicLevel:L.magicLevel, distance:L.distance, pontosWheel:L.pontosWheel, chanceCrit:L.chanceCrit, chanceLegs:L.chanceLegs, baseMasSan:L.baseMasSan, flechasHora:L.flechasHora, holyWeak:L.holyWeak, physWeak:L.physWeak };
-      Object.entries(map).forEach(([id, text]) => { const lab = labelOf(id); if(lab) lab.textContent = text; });
+      // Resumo prefixes
+      const setPrefix=(outId, txt)=>{ const span=document.getElementById(outId); if(span && span.parentElement){ span.parentElement.innerHTML = txt + ": <span id='"+outId+"'>" + span.textContent + "</span>"; } };
+      setPrefix("outF14",t.summary.f14); setPrefix("outF15",t.summary.f15); setPrefix("outF16",t.summary.f16); setPrefix("outF17",t.summary.f17);
 
-      // Resumo
-      const setPrefix = (outId, txt) => {
-        const span = document.getElementById(outId);
-        if(span && span.parentElement){
-          span.parentElement.innerHTML = txt + ": <span id='" + outId + "'>" + span.textContent + "</span>";
-        }
-      };
-      setPrefix("outF14", t.summary.f14);
-      setPrefix("outF15", t.summary.f15);
-      setPrefix("outF16", t.summary.f16);
-      setPrefix("outF17", t.summary.f17);
+      // nomes dos perks
+      labelF20.textContent=t.stage4.f20; labelF21.textContent=t.stage4.f21;
+      labelF24.textContent=t.stage5.f24; labelF25.textContent=t.stage5.f25; labelF26.textContent=t.stage5.f26;
 
-      // Nomes dos perks
-      document.getElementById("labelF20").textContent = t.stage4.f20;
-      document.getElementById("labelF21").textContent = t.stage4.f21;
-      document.getElementById("labelF24").textContent = t.stage5.f24;
-      document.getElementById("labelF25").textContent = t.stage5.f25;
-      document.getElementById("labelF26").textContent = t.stage5.f26;
+      // badges
+      document.querySelectorAll('.perk-card__badge').forEach(el=>el.textContent=t.badge);
 
-      // Badge traduzida
-      document.querySelectorAll('.perk-card__badge').forEach(el=>{ el.textContent = t.badge; });
-
-      // Atualiza ícone/label do botão atual
-      document.getElementById('langFlag').textContent = t.ui.flag;
+      // botão atual (código + flag)
       document.getElementById('langCode').textContent = t.ui.code;
+      setFlagImages(lang);
 
-      document.documentElement.lang = (lang === "en" ? "en" : "pt-BR");
+      document.documentElement.lang=(lang==='en'?'en':'pt-BR');
       fmtCache.reset();
       rodarCalculadora();
       try{ localStorage.setItem("calc_lang", lang); }catch(e){}
     }
 
-    // Toggle do menu de idioma
+    /* ===== Menu de idioma ===== */
     (function setupLangMenu(){
-      const btn = document.getElementById('langCurrent');
-      const menu = document.getElementById('langMenu');
-
-      function openMenu(){
-        menu.hidden = false;
-        btn.setAttribute('aria-expanded','true');
-      }
-      function closeMenu(){
-        menu.hidden = true;
-        btn.setAttribute('aria-expanded','false');
-      }
-      btn.addEventListener('click', (e)=>{
-        e.stopPropagation();
-        if(menu.hidden) openMenu(); else closeMenu();
-      });
-
-      // clique nas opções
+      const btn=document.getElementById('langCurrent');
+      const menu=document.getElementById('langMenu');
+      function openMenu(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
+      function closeMenu(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.hidden?openMenu():closeMenu(); });
       menu.querySelectorAll('.lang-opt').forEach(opt=>{
-        opt.addEventListener('click', (e)=>{
-          const lang = e.currentTarget.dataset.lang;
-          applyLang(lang);
-          closeMenu();
-        });
+        opt.addEventListener('click',(e)=>{ const lang=e.currentTarget.dataset.lang; applyLang(lang); closeMenu(); });
       });
+      document.addEventListener('click',(e)=>{ if(!menu.hidden && !document.getElementById('langSwitch').contains(e.target)) closeMenu(); });
 
-      // clique fora fecha
-      document.addEventListener('click', (e)=>{
-        if(!menu.hidden && !document.getElementById('langSwitch').contains(e.target)){
-          closeMenu();
-        }
-      });
-
-      // Inicia na língua salva
-      applyLang(currentLang());
+      const initial=currentLang();
+      applyLang(initial);
+      setFlagImages(initial);
     })();
 
-    // Restore e calcular
+    /* ===== Boot restore + eventos ===== */
     (function restoreAndRun(){
-      const params = new URLSearchParams(window.location.search);
+      const params=new URLSearchParams(window.location.search);
       if(params && Array.from(params.keys()).length){
-        const set = (id, key) => { if(params.has(key)) document.getElementById(id).value = params.get(key); };
+        const set=(id,key)=>{ if(params.has(key)) document.getElementById(id).value=params.get(key); };
         set('level','level'); set('magicLevel','magicLevel'); set('distance','distance'); set('pontosWheel','pontosWheel');
         set('chanceCrit','chanceCrit'); set('chanceLegs','chanceLegs'); set('baseMasSan','baseMasSan'); set('flechasHora','flechasHora');
         set('holyWeak','holyWeak'); set('physWeak','physWeak');
       }else{
         try{
-          const raw = localStorage.getItem('calc_state');
+          const raw=localStorage.getItem('calc_state');
           if(raw){
-            const st = JSON.parse(raw);
-            const set = (id, val) => { if (val !== undefined && val !== null) document.getElementById(id).value = val; };
-            set('level', st.F2); set('magicLevel', st.F3); set('distance', st.F4); set('pontosWheel', st.F5);
-            if(st.F6!=null) document.getElementById('chanceCrit').value = (st.F6*100).toString();
-            if(st.F7!=null) document.getElementById('chanceLegs').value = (st.F7*100).toString();
-            if(st.F8!=null) document.getElementById('baseMasSan').value = (st.F8*100).toString();
-            set('flechasHora', st.F9);
-            if(st.F11!=null) document.getElementById('holyWeak').value = (st.F11*100).toString();
-            if(st.F12!=null) document.getElementById('physWeak').value = (st.F12*100).toString();
+            const st=JSON.parse(raw);
+            const set=(id,val)=>{ if(val!==undefined && val!==null) document.getElementById(id).value=val; };
+            set('level',st.F2); set('magicLevel',st.F3); set('distance',st.F4); set('pontosWheel',st.F5);
+            if(st.F6!=null) chanceCrit.value=(st.F6*100).toString();
+            if(st.F7!=null) chanceLegs.value=(st.F7*100).toString();
+            if(st.F8!=null) baseMasSan.value=(st.F8*100).toString();
+            flechasHora.value=st.F9 ?? flechasHora.value;
+            if(st.F11!=null) holyWeak.value=(st.F11*100).toString();
+            if(st.F12!=null) physWeak.value=(st.F12*100).toString();
           }
         }catch(e){}
       }
       rodarCalculadora();
     })();
 
-    // Botões share/clear
-    document.getElementById('shareBtn').addEventListener('click', doShare);
+    const ids=['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
+    ids.forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input', rodarCalculadora); el.addEventListener('change', rodarCalculadora); });
+    clearBtn.addEventListener('click',()=>{ ids.forEach(id=>document.getElementById(id).value=''); ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id=>setText(id,'--')); try{ localStorage.removeItem('calc_state'); }catch(e){} clearHighlights(); statusText.innerText=''; });
+    shareBtn.addEventListener('click', doShare);
   </script>
 </body>
 </html>

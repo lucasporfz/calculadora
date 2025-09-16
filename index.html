@@ -82,7 +82,7 @@
       position:fixed; inset:0 0 auto 0; height:var(--topbar-h);
       background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0)) , var(--card);
       display:flex; align-items:center; gap:var(--ui-gap);
-      padding:12px 16px;
+      padding:11px 16px;
       border-bottom:1px solid var(--border);
       z-index:50;
     }
@@ -100,14 +100,13 @@
     /* container da direita: garante MESMO eixo */
     .topbar-right{
       display:flex; align-items:center; gap:var(--ui-gap);
-      margin-top: 2px;
     }
 
     /* ===== Switch Dark/Light ===== */
     .switch-wrap{ 
       display:flex; 
-      align-items:center; 
-      margin-top: 3px;
+      align-items:center;
+      transform: translateY(2px);
     }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
 

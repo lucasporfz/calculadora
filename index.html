@@ -315,10 +315,7 @@
   </a>
   
   <a class="kick-btn" href="https://kick.com/teuzinfps" target="_blank" rel="noopener">
-    <svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align: middle;" fill="currentColor">
-      <path d="M2 2h4v8h4l6-8h4l-8 10 8 10h-4l-6-8h-4v8H2V2z"/>
-    </svg>
-    Kick.com/teuzinfps
+    ⚡ Kick.com/teuzinfps
   </a>
 
   <div class="spacer"></div>
@@ -488,4 +485,226 @@
     function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
     function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
     function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
-    function calcF20(F14,F3,F8,F5,F16,F17){ const baseRight=Math.floor(F3*140*(1
+    function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
+    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
+    function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
+    function calcF20(F14,F3,F8,F5,F16,F17){ const baseRight=Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4); return (F14+baseRight+F5)*(1+(F16)*0.8+F17); }
+    function calcF21(F14,F15,F5,F16,F17){ return (F14+F15+F5)*(1+(F16+F17)); }
+    function calcF24(F14,F15,F5,F11){ return (F14+F15+F5)*0.03*0.25*F11; }
+    function calcF25(F21,F20,F4,F11){ const base=Math.round(F4*0.1); const mult=(F21>F20)?(0.2485*1.12+0.0435*1.0864):(0.2485*1.096+0.0435*1.0864); return base*mult*F11; }
+    function calcF26(F4,F12){ const ia=Math.floor((6/5)*48), ib=Math.floor((6/5)*46); const ta=Math.floor(ia*(Math.floor(F4)+4)/28); const tb=Math.floor(ib*(Math.floor(F4)+4)/28); return (ta-tb)*0.5*1.0864*F12; }
+
+    /* ===== Execução ===== */
+    function rodarCalculadora(){
+      const F2=getNum('level'), F3=getNum('magicLevel'), F4=getNum('distance'), F5=getNum('pontosWheel');
+      const F6=getPctFraction('chanceCrit'), F7=getPctFraction('chanceLegs'), F8=getPctFraction('baseMasSan');
+      const F9=getNum('flechasHora'); const F11=getPctMultiplier('holyWeak'); const F12=getPctMultiplier('physWeak');
+
+      const F14=calcF14(F2);
+      const F15=calcF15(F3,F8);
+      const F16=calcF16(F9,F7,F6);
+      const F17=calcF17(F9,F7);
+      const F20=calcF20(F14,F3,F8,F5,F16,F17);
+      const F21=calcF21(F14,F15,F5,F16,F17);
+      const F24=calcF24(F14,F15,F5,F11);
+      const F25=calcF25(F21,F20,F4,F11);
+      const F26=calcF26(F4,F12);
+
+      /* Resumo: Level dmg exibe F14 + F5 */
+      const F14Resumo = F14 + F5;
+
+      setText('outF14', F14Resumo);
+      setText('outF15', F15);
+      setText('outF16', (F16*100).toFixed(4) + ' %');
+      setText('outF17', (F17*100).toFixed(4) + ' %');
+
+      const fmt = fmtCache.get();
+      document.getElementById('outF20').textContent = fmt.format(F20);
+      document.getElementById('outF21').textContent = fmt.format(F21);
+      document.getElementById('outF24').textContent = fmt.format(F24);
+      document.getElementById('outF25').textContent = fmt.format(F25);
+      document.getElementById('outF26').textContent = fmt.format(F26);
+
+      try{ localStorage.setItem('calc_state', JSON.stringify({F2,F3,F4,F5,F6,F7,F8,F9,F11,F12})); }catch(e){}
+
+      clearHighlights();
+      const w4 = (F20>=F21)?'cardF20':'cardF21';
+      document.getElementById(w4).classList.add('is-best');
+
+      let w5='cardF24', m5=F24;
+      if(F25>m5){ w5='cardF25'; m5=F25; }
+      if(F26>m5){ w5='cardF26'; m5=F26; }
+      document.getElementById(w5).classList.add('is-best');
+    }
+
+    /* ===== Share ===== */
+    function buildShareURL(){
+      const raw = {
+        level: level.value, magicLevel: magicLevel.value, distance: distance.value, pontosWheel: pontosWheel.value,
+        chanceCrit: chanceCrit.value, chanceLegs: chanceLegs.value, baseMasSan: baseMasSan.value,
+        flechasHora: flechasHora.value, holyWeak: holyWeak.value, physWeak: physWeak.value
+      };
+      const params=new URLSearchParams(raw);
+      const base=window.location.origin+window.location.pathname;
+      return base+'?'+params.toString();
+    }
+    async function doShare(){
+      const lang=currentLang(); const t=i18n[lang]||i18n.pt; const url=buildShareURL();
+      const txt=[
+        t.shareSummary+":",
+        t.summary.f14+": "+document.getElementById("outF14").innerText,
+        t.summary.f15+": "+document.getElementById("outF15").innerText,
+        t.summary.f16+": "+document.getElementById("outF16").innerText,
+        t.summary.f17+": "+document.getElementById("outF17").innerText,
+        t.groups.stage4+" – "+document.getElementById("labelF20").innerText+": "+document.getElementById("outF20").innerText,
+        t.groups.stage4+" – "+document.getElementById("labelF21").innerText+": "+document.getElementById("outF21").innerText,
+        t.groups.stage5+" – "+document.getElementById("labelF25").innerText+": "+document.getElementById("outF25").innerText,
+        t.groups.stage5+" – "+document.getElementById("labelF24").innerText+": "+document.getElementById("outF24").innerText,
+        t.groups.stage5+" – "+document.getElementById("labelF26").innerText+": "+document.getElementById("outF26").innerText
+      ].join("\n");
+
+      if(navigator.share){
+        try{ await navigator.share({ title:t.shareTitle, text:txt, url }); statusText.innerText=(lang==="en"?"Shared!":"Compartilhado!"); setTimeout(()=>statusText.innerText="",1500); return; }catch(e){}
+      }
+      try{ await navigator.clipboard.writeText(url); statusText.innerText=(lang==="en"?"Link copied ✔":"Link copiado ✔"); setTimeout(()=>statusText.innerText="",1500); }catch(e){ statusText.innerText=url; }
+    }
+
+    /* ===== i18n ===== */
+    const i18n = {
+      pt: {
+        appTitle:"Calculadora Perks Sanguine Bow", title:"Calculadora Perks Sanguine Bow",
+        buttons:{ share:"Compartilhar", reset:"Limpar" },
+        groups:{ resumo:"Resumo", stage4:"Stage 4", stage5:"Stage 5" },
+        labels:{ level:"Level", magicLevel:"Magic Level", distance:"Distance", pontosWheel:"Pontos Dmg/Healing Roda", chanceCrit:"Chance de crítico (%)", chanceLegs:"Chance ativação legs (%)", baseMasSan:"Base mas san (roda + gemas) (%)", flechasHora:"Flechas/hora", holyWeak:"Dano sofrido por Sagrado (%)", physWeak:"Dano sofrido por Físico (%)" },
+        summary:{ f14:"Level dmg", f15:"Base dmg", f16:"Chance crítico ajustada", f17:"Bônus legs → avatar 3" },
+        stage4:{ f20:"+4% base damage para Divine Caldera", f21:"+20% critical extra damage para Divine Caldera" },
+        stage5:{ f24:"+3% critical hit chance para Divine Caldera", f25:"+10% Distance Fighting p/ spells", f26:"+2 attack" },
+        shareTitle:"Minha simulação — Calculadora", shareSummary:"Resumo", badge:"Melhor 🏆",
+        ui:{ code:"PT-BR" }
+      },
+      en: {
+        appTitle:"Sanguine Bow Proficiency Calculator", title:"Sanguine Bow Proficiency Calculator",
+        buttons:{ share:"Share", reset:"Reset" },
+        groups:{ resumo:"Resume", stage4:"Stage 4", stage5:"Stage 5" },
+        labels:{ level:"Level", magicLevel:"Magic Level", distance:"Distance", pontosWheel:"Dmg/Healing from Wheel", chanceCrit:"Critical chance (%)", chanceLegs:"Trancendence Triggering Chance (legs) (%)", baseMasSan:"Base mas san (wheel + gems) (%)", flechasHora:"Arrows/hour", holyWeak:"Damage taken from Holy (%)", physWeak:"Damage taken from Physical (%)" },
+        summary:{ f14:"Level dmg", f15:"Base dmg", f16:"Ajusted Critical Chance", f17:"Transcendence avatar 3 Bonus" },
+        stage4:{ f20:"+4% base damage for Divine Caldera", f21:"+20% critical extra damage for Divine Caldera" },
+        stage5:{ f24:"+3% critical hit chance for Divine Caldera", f25:"+10% Distance Fighting as extra damage for spells", f26:"+2 attack" },
+        shareTitle:"My simulation — Calculator", shareSummary:"Resume", badge:"Best 🏆",
+        ui:{ code:"ENG" }
+      }
+    };
+
+    function applyLang(lang){
+      const t=i18n[lang]||i18n.pt;
+
+      document.title=t.appTitle+" — versão web";
+      document.querySelector(".card h2").textContent=t.title;
+      shareBtn.textContent=t.buttons.share;
+      clearBtn.textContent=t.buttons.reset;
+
+      const gResumo=document.querySelector("#groupResumo h3"); if(gResumo) gResumo.textContent=t.groups.resumo;
+      const g4=document.querySelector("#groupStage4 h3"); if(g4) g4.textContent=t.groups.stage4;
+      const g5=document.querySelector("#groupStage5 h3"); if(g5) g5.textContent=t.groups.stage5;
+
+      // labels
+      const labelOf=(id)=>document.getElementById(id)?.previousElementSibling;
+      const L=t.labels;
+      const map={ level:L.level, magicLevel:L.magicLevel, distance:L.distance, pontosWheel:L.pontosWheel, chanceCrit:L.chanceCrit, chanceLegs:L.chanceLegs, baseMasSan:L.baseMasSan, flechasHora:L.flechasHora, holyWeak:L.holyWeak, physWeak:L.physWeak };
+      Object.entries(map).forEach(([id,txt])=>{ const lab=labelOf(id); if(lab) lab.textContent=txt; });
+
+      // Resumo prefixes
+      const setPrefix=(outId, txt)=>{ const span=document.getElementById(outId); if(span && span.parentElement){ span.parentElement.innerHTML = txt + ": <span id='"+outId+"'>" + span.textContent + "</span>"; } };
+      setPrefix("outF14",t.summary.f14); setPrefix("outF15",t.summary.f15); setPrefix("outF16",t.summary.f16); setPrefix("outF17",t.summary.f17);
+
+      // nomes dos perks
+      labelF20.textContent=t.stage4.f20; labelF21.textContent=t.stage4.f21;
+      labelF24.textContent=t.stage5.f24; labelF25.textContent=t.stage5.f25; labelF26.textContent=t.stage5.f26;
+
+      // badges
+      document.querySelectorAll('.perk-card__badge').forEach(el=>el.textContent=t.badge);
+
+      // botão atual (código + flag)
+      document.getElementById('langCode').textContent = t.ui.code;
+      setFlagImages(lang);
+
+      document.documentElement.lang=(lang==='en'?'en':'pt-BR');
+      fmtCache.reset();
+      rodarCalculadora();
+      try{ localStorage.setItem("calc_lang", lang); }catch(e){}
+    }
+
+    /* ===== Tema escuro/claro com switch ===== */
+    function setTheme(theme){
+      const root=document.body;
+      if(theme==='dark'){ root.classList.add('theme-dark'); }
+      else { root.classList.remove('theme-dark'); }
+      try{ localStorage.setItem('calc_theme', theme); }catch(e){}
+      const cb=document.getElementById('themeToggle');
+      const isDark = theme==='dark';
+      if(cb) cb.checked = isDark;
+    }
+    function initTheme(){
+      let t='light';
+      try{
+        const saved=localStorage.getItem('calc_theme');
+        if(saved) t=saved;
+        else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t='dark';
+      }catch(e){}
+      setTheme(t);
+      const cb=document.getElementById('themeToggle');
+      cb.addEventListener('change', ()=> setTheme(cb.checked ? 'dark' : 'light'));
+    }
+
+    /* ===== Menu de idioma ===== */
+    (function setupLangMenu(){
+      const btn=document.getElementById('langCurrent');
+      const menu=document.getElementById('langMenu');
+      function openMenu(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
+      function closeMenu(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
+      btn.addEventListener('click', (e)=>{ e.stopPropagation(); menu.hidden?openMenu():closeMenu(); });
+      menu.querySelectorAll('.lang-opt').forEach(opt=>{
+        opt.addEventListener('click',(e)=>{ const lang=e.currentTarget.dataset.lang; applyLang(lang); closeMenu(); });
+      });
+      document.addEventListener('click',(e)=>{ if(!menu.hidden && !document.getElementById('langSwitch').contains(e.target)) closeMenu(); });
+
+      const initial=currentLang();
+      applyLang(initial);
+      setFlagImages(initial);
+      initTheme();
+    })();
+
+    /* ===== Boot restore + eventos ===== */
+    (function restoreAndRun(){
+      const params=new URLSearchParams(window.location.search);
+      if(params && Array.from(params.keys()).length){
+        const set=(id,key)=>{ if(params.has(key)) document.getElementById(id).value=params.get(key); };
+        set('level','level'); set('magicLevel','magicLevel'); set('distance','distance'); set('pontosWheel','pontosWheel');
+        set('chanceCrit','chanceCrit'); set('chanceLegs','chanceLegs'); set('baseMasSan','baseMasSan'); set('flechasHora','flechasHora');
+        set('holyWeak','holyWeak'); set('physWeak','physWeak');
+      }else{
+        try{
+          const raw=localStorage.getItem('calc_state');
+          if(raw){
+            const st=JSON.parse(raw);
+            const set=(id,val)=>{ if(val!==undefined && val!==null) document.getElementById(id).value=val; };
+            set('level',st.F2); set('magicLevel',st.F3); set('distance',st.F4); set('pontosWheel',st.F5);
+            if(st.F6!=null) chanceCrit.value=(st.F6*100).toString();
+            if(st.F7!=null) chanceLegs.value=(st.F7*100).toString();
+            if(st.F8!=null) baseMasSan.value=(st.F8*100).toString();
+            flechasHora.value=st.F9 ?? flechasHora.value;
+            if(st.F11!=null) holyWeak.value=(st.F11*100).toString();
+            if(st.F12!=null) physWeak.value=(st.F12*100).toString();
+          }
+        }catch(e){}
+      }
+      rodarCalculadora();
+    })();
+
+    const ids=['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
+    ids.forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input', rodarCalculadora); el.addEventListener('change', rodarCalculadora); });
+    clearBtn.addEventListener('click',()=>{ ids.forEach(id=>document.getElementById(id).value=''); ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id=>setText(id,'--')); try{ localStorage.removeItem('calc_state'); }catch(e){} clearHighlights(); statusText.innerText=''; });
+    shareBtn.addEventListener('click', doShare);
+  </script>
+</body>
+</html>

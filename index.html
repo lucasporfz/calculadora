@@ -77,12 +77,13 @@
     input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
     input[type=number]{ -moz-appearance:textfield; }
 
-    /* ===== Topbar fixa ===== */
+/* ===== Topbar fixa ===== */
     .topbar{
       position:fixed; inset:0 0 auto 0; height:var(--topbar-h);
       background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0)) , var(--card);
       display:flex; align-items:center; gap:var(--ui-gap);
-      padding:11px 16px; /* 54px - 32px = 22px => 11px em cima/baixo para centrar */
+      /* centraliza qualquer UI de altura --ui-h dentro da topbar de --topbar-h */
+      padding: calc((var(--topbar-h) - var(--ui-h))/2) 16px;
       border-bottom:1px solid var(--border);
       z-index:50;
     }
@@ -100,14 +101,14 @@
     /* container da direita: garante MESMO eixo */
     .topbar-right{
       display:flex; align-items:center; gap:var(--ui-gap);
-      height:var(--ui-h); /* <- garante a altura base */
+      height:var(--ui-h);
     }
 
     /* ===== Switch Dark/Light ===== */
     .switch-wrap{
       display:flex; align-items:center;
-      height:var(--ui-h);           /* <- mesma altura dos demais */
-      /* REMOVIDO: transform: translateY(2px); */
+      height:var(--ui-h);           /* mesma altura dos demais */
+      /* removido: transform */
     }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
 
@@ -142,7 +143,7 @@
     .lang-switch{
       position:relative;
       display:flex; align-items:center;
-      height:var(--ui-h);           /* <- mesma altura do switch */
+      height:var(--ui-h);           /* mesma altura do switch */
     }
     .lang-btn{
       display:flex; align-items:center; gap:8px;
@@ -170,7 +171,6 @@
 
     .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
     .app h2{ margin:8px 8px 16px; text-align:center; } /* título centralizado */
-
     /* ===== Layout principal (desktop: 2 colunas, altura da viewport) ===== */
     .desktop-grid{ display:grid; gap:16px; }
     @media (min-width: 1100px){

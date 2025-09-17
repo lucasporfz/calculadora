@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <title>Calculadora Perks Sanguine Bow — versão web</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="https://static-cdn.jtvnw.net/emoticons/v2/305012938/static/light/1.0">
 
@@ -49,6 +49,9 @@
       --sw-on:#4f46e5;   /* Indigo (Dark) */
       --sw-off:#b45309;  /* Orange (Light) */
       --sw-thumb:#ffffff;
+
+      /* safe area */
+      --safe-top: env(safe-area-inset-top, 0px);
     }
     .theme-dark{
       --bg:#0b1020;
@@ -83,10 +86,12 @@
 
     /* ===== Topbar fixa ===== */
     .topbar{
-      position:fixed; inset:0 0 auto 0; height:var(--topbar-h);
+      position:fixed; inset:0 0 auto 0;
+      /* altura inclui a safe-area; conteúdo centralizado verticalmente */
+      height: calc(var(--topbar-h) + var(--safe-top));
       background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0)) , var(--card);
       display:flex; align-items:center; gap:var(--ui-gap);
-      padding:0 16px;
+      padding: calc(var(--safe-top) + (var(--topbar-h) - var(--ui-h))/2) 16px;
       border-bottom:1px solid var(--border);
       z-index:50;
     }
@@ -106,8 +111,8 @@
       align-items:center; 
       justify-content:center;
       gap:8px;
-      height:32px;
-      line-height:32px;
+      height:var(--ui-h);
+      line-height:var(--ui-h);
       padding:0 12px; 
       border-radius:999px;
       background:var(--twitch); 
@@ -125,8 +130,8 @@
       align-items:center; 
       justify-content:center;
       gap:8px;
-      height:32px;
-      line-height:32px;
+      height:var(--ui-h);
+      line-height:var(--ui-h);
       padding:0 12px; 
       border-radius:999px;
       background:var(--kick); 
@@ -143,15 +148,15 @@
       display:inline-flex; 
       align-items:center; 
       gap:var(--ui-gap);
-      height:32px;
+      height:var(--ui-h);
       vertical-align:middle;
     }
 
-    /* ===== Switch Dark/Light (REFATORADO) ===== */
+    /* ===== Switch Dark/Light ===== */
     .switch-wrap{ 
       display:inline-flex; 
       align-items:center;
-      height:32px;
+      height:var(--ui-h);
       vertical-align:middle;
     }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
@@ -159,7 +164,7 @@
     .switch{
       position:relative;
       width:var(--switch-w); 
-      height:32px;
+      height:var(--ui-h);
       background:var(--sw-off);
       border-radius:999px;
       display:inline-flex; 
@@ -192,7 +197,7 @@
       position:relative; 
       display:inline-flex; 
       align-items:center; 
-      height:32px;
+      height:var(--ui-h);
       vertical-align:middle;
     }
     .lang-btn{
@@ -200,8 +205,8 @@
       align-items:center; 
       justify-content:center;
       gap:8px;
-      height:32px;
-      line-height:32px;
+      height:var(--ui-h);
+      line-height:var(--ui-h);
       padding:0 10px;
       border-radius:999px;
       border:1px solid var(--pill-border);
@@ -225,7 +230,12 @@
     .lang-opt:hover{ background:#1f2937; }
 
     /* ===== Base ===== */
-    body { font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--fg); padding-top:calc(var(--topbar-h) + 20px); }
+    body { 
+      font-family: Inter, Arial, sans-serif; 
+      background:var(--bg); color:var(--fg); 
+      /* espaço = safe-area + altura da topbar + respiro */
+      padding-top: calc(var(--safe-top) + var(--topbar-h) + 20px); 
+    }
     .app { max-width:min(1280px, 96vw); margin:0 auto 16px; }
 
     .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
@@ -303,14 +313,10 @@
     /* Responsivo topo (mantém alinhamento) */
     @media (max-width: 640px){
       :root{ --ui-h: 28px; --switch-w: 48px; --switch-p: 3px; --knob: 22px; --topbar-h: 50px; }
-      .topbar{ gap:8px; padding: 0 12px; }
-      body { padding-top: calc(var(--topbar-h) + 16px); }
-      .twitch-btn, .kick-btn { height: 28px; line-height: 28px; padding: 0 10px; font-size: 13px; }
-      .topbar-right { height: 28px; }
-      .switch-wrap { height: 28px; }
-      .switch { height: 28px; }
-      .lang-switch { height: 28px; }
-      .lang-btn { height: 28px; line-height: 28px; }
+      .topbar{ gap:8px; padding: calc(var(--safe-top) + (var(--topbar-h) - var(--ui-h))/2) 12px; }
+      body { padding-top: calc(var(--safe-top) + var(--topbar-h) + 16px); }
+      .twitch-btn, .kick-btn { height: var(--ui-h); line-height: var(--ui-h); padding: 0 10px; font-size: 13px; }
+      .topbar-right, .switch-wrap, .switch, .lang-switch, .lang-btn { height: var(--ui-h); }
     }
   </style>
 </head>
@@ -489,9 +495,6 @@
       if (F2 < 2600) return Math.floor((F2-1800)/8 + 300);
       return Math.floor((F2-2600)/9 + 400);
     }
-    function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
-    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
-    function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
     function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
     function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
     function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }

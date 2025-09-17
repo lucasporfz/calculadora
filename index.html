@@ -306,6 +306,10 @@
       .topbar{ gap:6px; padding: 0 10px; min-height: var(--topbar-h); }
       body { padding-top: calc(var(--topbar-h) + 20px); min-height: 100vh; }
       .twitch-btn, .kick-btn { height: 28px; line-height: 28px; padding: 0 8px; font-size: 12px; }
+      .twitch-btn::before { content: "🎮 Twitch"; }
+      .twitch-btn span { display: none; }
+      .kick-btn::before { content: "⚡ Kick"; }
+      .kick-btn span { display: none; }
       .topbar-right { height: 28px; }
       .switch-wrap { height: 28px; }
       .switch { height: 28px; }
@@ -328,11 +332,11 @@
   <!-- ===== Topbar ===== -->
 <div class="topbar">
   <a class="twitch-btn" href="https://www.twitch.tv/teuzinfps" target="_blank" rel="noopener">
-    🎮 Twitch.tv/teuzinfps
+    <span>🎮 Twitch.tv/teuzinfps</span>
   </a>
   
   <a class="kick-btn" href="https://kick.com/teuzinfps" target="_blank" rel="noopener">
-    ⚡ Kick.com/teuzinfps
+    <span>⚡ Kick.com/teuzinfps</span>
   </a>
 
   <div class="spacer"></div>

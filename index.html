@@ -504,13 +504,40 @@
       return Math.floor((F2-2600)/9 + 400);
     }
     function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
-    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
+    function calcF16(F9,F7,F6){ 
+      // f16novo:
+      // =SE(ARREDONDAR.PARA.BAIXO(F6*2*F9;0)<F6*2*F9;F6;(ARREDONDAR.PARA.BAIXO((F9*F7*6);0)+ARREDONDAR.PARA.BAIXO(((F9*2)-(ARREDONDAR.PARA_BAIXO((F9*F7*6);0)))*F6;0))/(F9*2))
+      const prod = F6*2*F9;
+      if(Math.floor(prod) < prod){
+        return F6; // se não é inteiro, devolve F6 diretamente
+      }
+      const p1 = Math.floor(F9*F7*6);
+      const p2 = Math.floor(((F9*2)-p1)*F6);
+      return (p1+p2)/(F9*2);
+    }
     function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
     function calcF20(F14,F3,F8,F5,F16,F17){ const baseRight=Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4); return (F14+baseRight+F5)*(1+(F16)*0.8+F17); }
     function calcF21(F14,F15,F5,F16,F17){ return (F14+F15+F5)*(1+(F16+F17)); }
     function calcF24(F14,F15,F5,F11){ return (F14+F15+F5)*0.03*0.25*F11; }
-    function calcF25(F21,F20,F4,F11){ const base=Math.round(F4*0.1); const mult=(F21>F20)?(0.2485*1.12+0.0435*1.0864):(0.2485*1.096+0.0435*1.0864); return base*mult*F11; }
-    function calcF26(F4,F12){ const ia=Math.floor((6/5)*48), ib=Math.floor((6/5)*46); const ta=Math.floor(ia*(Math.floor(F4)+4)/28); const tb=Math.floor(ib*(Math.floor(F4)+4)/28); return (ta-tb)*0.5*1.0864*F12; }
+    function calcF25(F21,F20,F4,F11,F16){ 
+      // f25novo:
+      // =SE(F21>F20;ARRED(F4*0,1;0)*(0,2485*(1+100*F16/100)+0,0435*(1+72*F16/100))*F11;
+      //             ARRED(F4*0,1;0)*(0,2485*(1+80*F16/100)+0,0435*(1+72*F16/100))*F11)
+      const base = Math.round(F4*0.1);
+      const mult = (F21>F20)
+        ? (0.2485*(1 + (100*F16/100)) + 0.0435*(1 + (72*F16/100)))
+        : (0.2485*(1 + (80*F16/100)) + 0.0435*(1 + (72*F16/100)));
+      return base * mult * F11;
+    }
+    function calcF26(F4,F12,F16){ 
+      // f26novo:
+      // =(((ARREDONDAR.PARA.BAIXO(ARREDONDAR.PARA.BAIXO(6/5*(48);0)*(ARREDONDAR.PARA.BAIXO(F4;0)+4)/28;0)))-((ARREDONDAR.PARA.BAIXO(ARREDONDAR.PARA.BAIXO(6/5*(46);0)*(ARREDONDAR.PARA.BAIXO(F4;0)+4)/28;0))))*0,5*(1+72*F16/100)*F12
+      const ia = Math.floor((6/5)*48), ib = Math.floor((6/5)*46);
+      const ta = Math.floor(ia*(Math.floor(F4)+4)/28);
+      const tb = Math.floor(ib*(Math.floor(F4)+4)/28);
+      const diff = (ta - tb);
+      return diff * 0.5 * (1 + (72*F16/100)) * F12;
+    }
 
     /* ===== Execução ===== */
     function rodarCalculadora(){
@@ -525,8 +552,8 @@
       const F20=calcF20(F14,F3,F8,F5,F16,F17);
       const F21=calcF21(F14,F15,F5,F16,F17);
       const F24=calcF24(F14,F15,F5,F11);
-      const F25=calcF25(F21,F20,F4,F11);
-      const F26=calcF26(F4,F12);
+      const F25 = calcF25(F21,F20,F4,F11, F16);
+      const F26 = calcF26(F4,F12, F16);
 
       /* Resumo: Level dmg exibe F14 + F5 */
       const F14Resumo = F14 + F5;

@@ -3,7 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <title>Calculadora Perks Sanguine Bow — versão web</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://static-cdn.jtvnw.net/emoticons/v2/305012938/static/light/1.0">
 
   <style>
     /* ===== Design tokens ===== */
@@ -39,15 +42,13 @@
 
       --brand:#2563eb;
       --twitch:#9146FF;
+      --kick:#53fc18;
       --best:#16a34a;
 
       /* switch cores */
       --sw-on:#4f46e5;   /* Indigo (Dark) */
       --sw-off:#b45309;  /* Orange (Light) */
       --sw-thumb:#ffffff;
-
-      /* safe area (iOS) */
-      --safe-top: env(safe-area-inset-top, 0px);
     }
     .theme-dark{
       --bg:#0b1020;
@@ -82,51 +83,93 @@
 
     /* ===== Topbar fixa ===== */
     .topbar{
-      position:fixed; left:0; right:0; top:0;
-      /* sem altura fixa: pode crescer se precisar */
-      min-height: calc(var(--topbar-h) + var(--safe-top));
+      position:fixed; inset:0 0 auto 0; height:var(--topbar-h);
       background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,0)) , var(--card);
       display:flex; align-items:center; gap:var(--ui-gap);
-      /* padding vertical: safe-area + compensação da UI */
-      padding: calc(var(--safe-top) + (var(--topbar-h) - var(--ui-h))/2) 16px calc((var(--topbar-h) - var(--ui-h))/2);
+      padding:0 16px;
       border-bottom:1px solid var(--border);
       z-index:50;
-      flex-wrap: nowrap; /* quebraremos só em telas bem estreitas */
     }
-    .topbar .spacer{ flex:1 1 auto; }
+    .topbar .spacer{ flex:1; }
+
+    /* Forçar alinhamento de todos elementos da topbar */
+    .topbar > *,
+    .topbar-right > *,
+    .switch-wrap > * {
+      margin:0;
+      vertical-align:middle;
+    }
 
     /* Twitch */
     .twitch-btn{
-      display:flex; align-items:center; gap:8px;
-      height:var(--ui-h); padding:0 12px; border-radius:999px;
-      background:var(--twitch); color:#fff; text-decoration:none; font-weight:700;
+      display:inline-flex; 
+      align-items:center; 
+      justify-content:center;
+      gap:8px;
+      height:32px;
+      line-height:32px;
+      padding:0 12px; 
+      border-radius:999px;
+      background:var(--twitch); 
+      color:#fff; 
+      text-decoration:none; 
+      font-weight:700;
       box-shadow:0 6px 18px rgba(0,0,0,.15);
       white-space:nowrap;
+      vertical-align:middle;
+    }
+
+    /* Kick */
+    .kick-btn{
+      display:inline-flex; 
+      align-items:center; 
+      justify-content:center;
+      gap:8px;
+      height:32px;
+      line-height:32px;
+      padding:0 12px; 
+      border-radius:999px;
+      background:var(--kick); 
+      color:#000; 
+      text-decoration:none; 
+      font-weight:700;
+      box-shadow:0 6px 18px rgba(0,0,0,.15);
+      white-space:nowrap;
+      vertical-align:middle;
     }
 
     /* container da direita: garante MESMO eixo */
     .topbar-right{
-      display:flex; align-items:center; gap:var(--ui-gap);
-      height:var(--ui-h);
+      display:inline-flex; 
+      align-items:center; 
+      gap:var(--ui-gap);
+      height:32px;
+      vertical-align:middle;
     }
 
-    /* ===== Switch Dark/Light ===== */
-    .switch-wrap{
-      display:flex; align-items:center;
-      height:var(--ui-h);
+    /* ===== Switch Dark/Light (REFATORADO) ===== */
+    .switch-wrap{ 
+      display:inline-flex; 
+      align-items:center;
+      height:32px;
+      vertical-align:middle;
     }
     #themeToggle{ position:absolute; inset:0; width:0; height:0; opacity:0; }
 
     .switch{
       position:relative;
-      width:var(--switch-w); height:var(--ui-h);
+      width:var(--switch-w); 
+      height:32px;
       background:var(--sw-off);
       border-radius:999px;
-      display:flex; align-items:center;
+      display:inline-flex; 
+      align-items:center;
       padding:var(--switch-p);
       cursor:pointer;
       box-shadow:0 4px 14px rgba(0,0,0,.15) inset, 0 2px 6px rgba(0,0,0,.12);
       transition:background .2s ease;
+      border:none;
+      vertical-align:middle;
     }
     .switch .thumb{
       position:absolute; top:var(--switch-p); left:var(--switch-p);
@@ -135,8 +178,9 @@
       box-shadow:0 2px 6px rgba(0,0,0,.25);
       transition:transform .25s cubic-bezier(.2,.8,.2,1);
     }
-    .icon-sun svg, .icon-moon svg{ width:16px; height:16px; fill:#FFD54A; }
+    .icon-sun svg, .icon-moon svg{ width:16px; height:16px; fill:#FFD54A; } /* sol/lua amarelos */
     #themeToggle:checked + .switch{ background:var(--sw-on); }
+    /* deslocamento preciso: largura − knob − 2*padding */
     #themeToggle:checked + .switch .thumb{
       transform: translateX(calc(var(--switch-w) - var(--knob) - (var(--switch-p) * 2)));
     }
@@ -144,14 +188,29 @@
     #themeToggle:not(:checked) + .switch .icon-moon{ display:none; }
 
     /* ===== Seletor de idioma ===== */
-    .lang-switch{ position:relative; display:flex; align-items:center; height:var(--ui-h); }
+    .lang-switch{ 
+      position:relative; 
+      display:inline-flex; 
+      align-items:center; 
+      height:32px;
+      vertical-align:middle;
+    }
     .lang-btn{
-      display:flex; align-items:center; gap:8px;
-      height:100%; padding:0 10px;
+      display:inline-flex; 
+      align-items:center; 
+      justify-content:center;
+      gap:8px;
+      height:32px;
+      line-height:32px;
+      padding:0 10px;
       border-radius:999px;
       border:1px solid var(--pill-border);
-      background:var(--pill-bg); color:var(--pill-text);
-      font-weight:800; box-shadow:0 4px 14px rgba(2,6,23,.15);
+      background:var(--pill-bg); 
+      color:var(--pill-text);
+      font-weight:800; 
+      box-shadow:0 4px 14px rgba(2,6,23,.15);
+      cursor:pointer;
+      vertical-align:middle;
     }
     .lang-btn .code{ font-size:12px; letter-spacing:.2px; }
     .flag-img{ width:20px; height:14px; border-radius:4px; display:inline-block; vertical-align:middle; box-shadow:0 0 0 1px rgba(255,255,255,.25) inset; }
@@ -166,15 +225,13 @@
     .lang-opt:hover{ background:#1f2937; }
 
     /* ===== Base ===== */
-    /* fallback: um padding-top inicial (JS vai ajustar com a altura real da topbar) */
-    body { font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--fg);
-      padding-top: calc(var(--safe-top) + var(--topbar-h) + 20px); }
-
+    body { font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--fg); padding-top:calc(var(--topbar-h) + 20px); }
     .app { max-width:min(1280px, 96vw); margin:0 auto 16px; }
-    .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
-    .app h2{ margin:8px 8px 16px; text-align:center; }
 
-    /* ===== Layout principal ===== */
+    .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
+    .app h2{ margin:8px 8px 16px; text-align:center; } /* título centralizado */
+
+    /* ===== Layout principal (desktop: 2 colunas, altura da viewport) ===== */
     .desktop-grid{ display:grid; gap:16px; }
     @media (min-width: 1100px){
       .desktop-grid{
@@ -204,7 +261,10 @@
       font-size:15px;
     }
     input[type=number]:hover{ border-color:var(--input-border-hover); }
-    input[type=number]:focus{ border-color:#93c5fd; box-shadow:0 0 0 3px var(--focus-ring); }
+    input[type=number]:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 3px var(--focus-ring);
+    }
 
     .full { grid-column: 1 / -1; }
     .btn { padding:10px 14px; background:var(--brand); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600; }
@@ -240,57 +300,68 @@
     .perk-card__badge{ display:none; position:absolute; top:-10px; right:10px; background:var(--best); color:#062b1e; font-weight:800; padding:2px 8px; border-radius:999px; font-size:.72rem; box-shadow:0 6px 16px rgba(16,185,129,.35); }
     .perk-card.is-best .perk-card__badge{ display:inline-block; }
 
-    /* ===== Mobile estreito ===== */
-    @media (max-width: 520px){
+    /* Responsivo topo (mantém alinhamento) */
+    @media (max-width: 640px){
       :root{ --ui-h: 28px; --switch-w: 48px; --switch-p: 3px; --knob: 22px; --topbar-h: 50px; }
-      .topbar{ gap:8px; padding: calc(var(--safe-top) + (var(--topbar-h) - var(--ui-h))/2) 12px calc((var(--topbar-h) - var(--ui-h))/2); flex-wrap: wrap; }
-      .topbar-right{ width:100%; justify-content:flex-end; }
+      .topbar{ gap:8px; padding: 0 12px; }
+      body { padding-top: calc(var(--topbar-h) + 16px); }
+      .twitch-btn, .kick-btn { height: 28px; line-height: 28px; padding: 0 10px; font-size: 13px; }
+      .topbar-right { height: 28px; }
+      .switch-wrap { height: 28px; }
+      .switch { height: 28px; }
+      .lang-switch { height: 28px; }
+      .lang-btn { height: 28px; line-height: 28px; }
     }
   </style>
 </head>
 <body>
   <!-- ===== Topbar ===== -->
-  <div class="topbar" id="topbar">
-    <a class="twitch-btn" href="https://www.twitch.tv/teuzinfps" target="_blank" rel="noopener">
-      🎮 Twitch.tv/teuzinfps
-    </a>
+<div class="topbar">
+  <a class="twitch-btn" href="https://www.twitch.tv/teuzinfps" target="_blank" rel="noopener">
+    🎮 Twitch.tv/teuzinfps
+  </a>
+  
+  <a class="kick-btn" href="https://kick.com/teuzinfps" target="_blank" rel="noopener">
+    ⚡ Kick.com/teuzinfps
+  </a>
 
-    <div class="spacer"></div>
+  <div class="spacer"></div>
 
-    <!-- AGRUPADOS para alinhamento perfeito -->
-    <div class="topbar-right">
-      <div class="switch-wrap">
-        <input id="themeToggle" type="checkbox" aria-label="Alternar tema (Dark/Light)">
-        <label for="themeToggle" class="switch">
-          <span class="thumb">
-            <span class="icon-sun" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><g><rect x="11" y="1" width="2" height="4"/><rect x="11" y="19" width="2" height="4"/><rect x="1" y="11" width="4" height="2"/><rect x="19" y="11" width="4" height="2"/></g><g transform="rotate(45 12 12)"><rect x="11" y="1" width="2" height="4"/><rect x="11" y="19" width="2" height="4"/><rect x="1" y="11" width="4" height="2"/><rect x="19" y="11" width="4" height="2"/></g></svg>
-            </span>
-            <span class="icon-moon" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8z"/></svg>
-            </span>
+  <!-- AGRUPADOS para alinhamento perfeito -->
+  <div class="topbar-right">
+    <div class="switch-wrap">
+      <input id="themeToggle" type="checkbox" aria-label="Alternar tema (Dark/Light)">
+      <label for="themeToggle" class="switch">
+        <span class="thumb">
+          <span class="icon-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><g><rect x="11" y="1" width="2" height="4"/><rect x="11" y="19" width="2" height="4"/><rect x="1" y="11" width="4" height="2"/><rect x="19" y="11" width="4" height="2"/></g><g transform="rotate(45 12 12)"><rect x="11" y="1" width="2" height="4"/><rect x="11" y="19" width="2" height="4"/><rect x="1" y="11" width="4" height="2"/><rect x="19" y="11" width="4" height="2"/></g></svg>
           </span>
-        </label>
-      </div>
+          <span class="icon-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 1 0 9.8 9.8z"/></svg>
+          </span>
+        </span>
+      </label>
+    </div>
 
-      <div class="lang-switch" id="langSwitch">
-        <button class="lang-btn" id="langCurrent" aria-haspopup="menu" aria-expanded="false">
-          <img class="flag-img" id="langFlag" alt="">
-          <span class="code" id="langCode">PT-BR</span>
+    <div class="lang-switch" id="langSwitch">
+      <button class="lang-btn" id="langCurrent" aria-haspopup="menu" aria-expanded="false">
+        <img class="flag-img" id="langFlag" alt="">
+        <span class="code" id="langCode">PT-BR</span>
+      </button>
+      <div class="lang-menu" id="langMenu" hidden role="menu" aria-label="Selecionar idioma">
+        <button class="lang-opt" data-lang="pt" role="menuitem">
+          <img class="flag-img" alt="">
+          <span>PT-BR</span>
         </button>
-        <div class="lang-menu" id="langMenu" hidden role="menu" aria-label="Selecionar idioma">
-          <button class="lang-opt" data-lang="pt" role="menuitem">
-            <img class="flag-img" alt="">
-            <span>PT-BR</span>
-          </button>
-          <button class="lang-opt" data-lang="en" role="menuitem">
-            <img class="flag-img" alt="">
-            <span>ENG</span>
-          </button>
-        </div>
+        <button class="lang-opt" data-lang="en" role="menuitem">
+          <img class="flag-img" alt="">
+          <span>ENG</span>
+        </button>
       </div>
     </div>
   </div>
+</div>
+
 
   <!-- ===== Conteúdo ===== -->
   <div class="app">
@@ -374,21 +445,6 @@
   </div>
 
   <script>
-    /* ===== medir topbar e ajustar o padding do body ===== */
-    function adjustTopPadding(){
-      const tb=document.getElementById('topbar');
-      if(!tb) return;
-      // altura real da barra + um respiro
-      const h = Math.ceil(tb.getBoundingClientRect().height) + 16;
-      document.body.style.paddingTop = h + 'px';
-    }
-    // debounce simples para não recalcular demais
-    let _ptimer=null;
-    function debounceAdjust(){ clearTimeout(_ptimer); _ptimer=setTimeout(adjustTopPadding, 80); }
-    window.addEventListener('load', adjustTopPadding, {once:true});
-    window.addEventListener('resize', debounceAdjust);
-    window.addEventListener('orientationchange', adjustTopPadding);
-
     /* ===== Flags em SVG (data URI) ===== */
     function svgDataUri(svg){ return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.trim()); }
     const FLAG_SVG = {
@@ -433,6 +489,9 @@
       if (F2 < 2600) return Math.floor((F2-1800)/8 + 300);
       return Math.floor((F2-2600)/9 + 400);
     }
+    function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
+    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
+    function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
     function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
     function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
     function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
@@ -483,9 +542,6 @@
       if(F25>m5){ w5='cardF25'; m5=F25; }
       if(F26>m5){ w5='cardF26'; m5=F26; }
       document.getElementById(w5).classList.add('is-best');
-
-      // se o conteúdo do topo mudar de altura (wrap etc.), atualiza o padding
-      adjustTopPadding();
     }
 
     /* ===== Share ===== */
@@ -582,9 +638,6 @@
       document.documentElement.lang=(lang==='en'?'en':'pt-BR');
       fmtCache.reset();
       rodarCalculadora();
-
-      // pode mudar altura da topbar (texto/medidas), então ajusta o padding
-      adjustTopPadding();
       try{ localStorage.setItem("calc_lang", lang); }catch(e){}
     }
 
@@ -597,7 +650,6 @@
       const cb=document.getElementById('themeToggle');
       const isDark = theme==='dark';
       if(cb) cb.checked = isDark;
-      adjustTopPadding(); // pode alterar métricas (bordas/contraste)
     }
     function initTheme(){
       let t='light';
@@ -654,22 +706,11 @@
         }catch(e){}
       }
       rodarCalculadora();
-      adjustTopPadding(); // garante logo após restaurar
     })();
 
     const ids=['level','magicLevel','distance','pontosWheel','chanceCrit','chanceLegs','baseMasSan','flechasHora','holyWeak','physWeak'];
-    ids.forEach(id=>{
-      const el=document.getElementById(id);
-      el.addEventListener('input', rodarCalculadora);
-      el.addEventListener('change', rodarCalculadora);
-    });
-    clearBtn.addEventListener('click',()=>{
-      ids.forEach(id=>document.getElementById(id).value='');
-      ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id=>setText(id,'--'));
-      try{ localStorage.removeItem('calc_state'); }catch(e){}
-      clearHighlights(); statusText.innerText='';
-      adjustTopPadding();
-    });
+    ids.forEach(id=>{ const el=document.getElementById(id); el.addEventListener('input', rodarCalculadora); el.addEventListener('change', rodarCalculadora); });
+    clearBtn.addEventListener('click',()=>{ ids.forEach(id=>document.getElementById(id).value=''); ['outF14','outF15','outF16','outF17','outF20','outF21','outF24','outF25','outF26'].forEach(id=>setText(id,'--')); try{ localStorage.removeItem('calc_state'); }catch(e){} clearHighlights(); statusText.innerText=''; });
     shareBtn.addEventListener('click', doShare);
   </script>
 </body>

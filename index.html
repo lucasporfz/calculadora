@@ -225,7 +225,7 @@
     .lang-opt:hover{ background:#1f2937; }
 
     /* ===== Base ===== */
-    body { font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--fg); padding-top:calc(var(--topbar-h) + 20px); }
+    body { font-family: Inter, Arial, sans-serif; background:var(--bg); color:var(--fg); padding-top:calc(var(--topbar-h) + 24px); min-height:100vh; }
     .app { max-width:min(1280px, 96vw); margin:0 auto 16px; }
 
     .card { background:var(--card); padding:14px; border-radius:16px; box-shadow:0 6px 18px rgba(0,0,0,0.06); border:1px solid var(--border); }
@@ -302,15 +302,25 @@
 
     /* Responsivo topo (mantém alinhamento) */
     @media (max-width: 640px){
-      :root{ --ui-h: 28px; --switch-w: 48px; --switch-p: 3px; --knob: 22px; --topbar-h: 50px; }
-      .topbar{ gap:8px; padding: 0 12px; }
-      body { padding-top: calc(var(--topbar-h) + 16px); }
-      .twitch-btn, .kick-btn { height: 28px; line-height: 28px; padding: 0 10px; font-size: 13px; }
+      :root{ --ui-h: 28px; --switch-w: 48px; --switch-p: 3px; --knob: 22px; --topbar-h: 48px; }
+      .topbar{ gap:6px; padding: 0 10px; min-height: var(--topbar-h); }
+      body { padding-top: calc(var(--topbar-h) + 20px); min-height: 100vh; }
+      .twitch-btn, .kick-btn { height: 28px; line-height: 28px; padding: 0 8px; font-size: 12px; }
       .topbar-right { height: 28px; }
       .switch-wrap { height: 28px; }
       .switch { height: 28px; }
       .lang-switch { height: 28px; }
-      .lang-btn { height: 28px; line-height: 28px; }
+      .lang-btn { height: 28px; line-height: 28px; padding: 0 8px; }
+      .lang-btn .code { font-size: 11px; }
+      .flag-img { width: 16px; height: 12px; }
+    }
+    
+    @media (max-width: 480px){
+      :root{ --topbar-h: 44px; }
+      body { padding-top: calc(var(--topbar-h) + 16px); }
+      .topbar { padding: 0 8px; gap: 4px; }
+      .twitch-btn, .kick-btn { font-size: 11px; padding: 0 6px; }
+      .lang-btn { padding: 0 6px; }
     }
   </style>
 </head>
@@ -489,9 +499,6 @@
       if (F2 < 2600) return Math.floor((F2-1800)/8 + 300);
       return Math.floor((F2-2600)/9 + 400);
     }
-    function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
-    function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
-    function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
     function calcF15(F3,F8){ return Math.floor(F3*140*(1+F8)/25 + 140*(1+F8)/4); }
     function calcF16(F9,F7,F6){ const p1=Math.floor(F9*F7*6); const p2=Math.floor(((F9*2)-p1)*F6); return (p1+p2)/(F9*2); }
     function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }

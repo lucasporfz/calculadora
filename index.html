@@ -508,7 +508,7 @@
       // f16novo:
       // =SE(ARREDONDAR.PARA.BAIXO(F6*2*F9;0)<F6*2*F9;F6;(ARREDONDAR.PARA.BAIXO((F9*F7*6);0)+ARREDONDAR.PARA.BAIXO(((F9*2)-(ARREDONDAR.PARA_BAIXO((F9*F7*6);0)))*F6;0))/(F9*2))
       const prod = F6*2*F9;
-      if(Math.floor(prod) < prod){
+      if(Math.floor(prod) > prod){
         return F6; // se não é inteiro, devolve F6 diretamente
       }
       const p1 = Math.floor(F9*F7*6);
@@ -518,7 +518,13 @@
     function calcF17(F9,F7){ const p1=Math.floor(F9*F7*6); return (p1*15/(F9*2))/100; }
     function calcF20(F14,F3,F8,F5,F16,F17){ const baseRight=Math.floor(F3*140*(1+F8+0.04)/25 + 140*(1+F8+0.04)/4); return (F14+baseRight+F5)*(1+(F16)*0.8+F17); }
     function calcF21(F14,F15,F5,F16,F17){ return (F14+F15+F5)*(1+(F16+F17)); }
-    function calcF24(F14,F15,F5,F11){ return (F14+F15+F5)*0.03*0.25*F11; }
+    function calcF24(F14,F15,F11,F9,F7,F5,F6){
+      const base = (F14 + F15 + F5) * 0.03 * 0.25 * F11;
+      const p1 = Math.floor(F9 * F7 * 6);
+      const numer = Math.floor((F9 * 2) - p1);
+      const ratio = numer / (F9 * 2);
+      return base * ratio * (1 - F6);
+    }
     function calcF25(F21,F20,F4,F11,F16){ 
       // f25novo:
       // =SE(F21>F20;ARRED(F4*0,1;0)*(0,2485*(1+100*F16/100)+0,0435*(1+72*F16/100))*F11;
